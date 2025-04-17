@@ -1,0 +1,548 @@
+import React, { useState, useEffect } from 'react';
+import { View, Text, Image, TextInput, FlatList, TouchableOpacity, StyleSheet, Modal, Alert, Platform } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Ionicons } from '@expo/vector-icons';
+import { NavigationContainer } from '@react-navigation/native';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+
+// Định nghĩa kiểu dữ liệu cho token
+interface Token {
+  id: string;
+  name: string;
+  symbol: string;
+  balance: number;
+  price: number;
+  value: number;
+  change: number;
+  changePercent: number;
+  logo: string;
+}
+
+// Dữ liệu giả lập
+const initialMockData = {
+  totalBalance: 0,
+  balanceChange: 0,
+  balanceChangePercent: 0,
+  sol: {
+    id: 'sol',
+    name: 'Solana',
+    symbol: 'SOL',
+    balance: 0.5,
+    price: 145,
+    value: 0,
+    change: 0,
+    changePercent: 0,
+    logo: 'https://cryptologos.cc/logos/solana-sol-logo.png',
+  },
+  tokens: [
+    { id: '1', name: 'USDC', symbol: 'USDC', balance: 100, price: 1, value: 100, change: 0, changePercent: 0, logo: 'https://cryptologos.cc/logos/usd-coin-usdc-logo.png' },
+    { id: '2', name: 'Serum', symbol: 'SRM', balance: 200, price: 0.03, value: 6, change: 0, changePercent: 0, logo: 'https://cryptologos.cc/logos/serum-srm-logo.png' },
+    { id: '3', name: 'Raydium', symbol: 'RAY', balance: 50, price: 1.5, value: 75, change: 0, changePercent: 0, logo: 'https://cryptologos.cc/logos/raydium-ray-logo.png' },
+    { id: '4', name: 'Saber', symbol: 'SBR', balance: 1000, price: 0.002, value: 2, change: 0, changePercent: 0, logo: 'https://via.placeholder.com/40' },
+    { id: '5', name: 'Orca', symbol: 'ORCA', balance: 20, price: 2.5, value: 50, change: 0, changePercent: 0, logo: 'https://via.placeholder.com/40' },
+    { id: '6', name: 'Mango', symbol: 'MNGO', balance: 300, price: 0.02, value: 6, change: 0, changePercent: 0, logo: 'https://via.placeholder.com/40' },
+    { id: '7', name: 'Jito', symbol: 'JTO', balance: 10, price: 3, value: 30, change: 0, changePercent: 0, logo: 'https://via.placeholder.com/40' },
+    { id: '8', name: 'Bonfida', symbol: 'FIDA', balance: 150, price: 0.25, value: 37.5, change: 0, changePercent: 0, logo: 'https://via.placeholder.com/40' },
+    { id: '9', name: 'Marinade', symbol: 'MNDE', balance: 200, price: 0.1, value: 20, change: 0, changePercent: 0, logo: 'https://via.placeholder.com/40' },
+    { id: '10', name: 'Drift', symbol: 'DRIFT', balance: 80, price: 0.5, value: 40, change: 0, changePercent: 0, logo: 'https://via.placeholder.com/40' },
+  ],
+};
+
+// Màn hình Home
+const HomeScreen: React.FC = () => {
+  const [walletName, setWalletName] = useState<string>('@dynh');
+  const [walletLogo, setWalletLogo] = useState<string>('https://via.placeholder.com/40');
+  const [totalBalance, setTotalBalance] = useState<number>(0);
+  const [balanceChange, setBalanceChange] = useState<number>(0);
+  const [balanceChangePercent, setBalanceChangePercent] = useState<number>(0);
+  const [sol, setSol] = useState<Token>(initialMockData.sol);
+  const [tokens, setTokens] = useState<Token[]>(initialMockData.tokens);
+  const [tokenDisplayCount, setTokenDisplayCount] = useState<number>(10);
+  const [modalVisible, setModalVisible] = useState<boolean>(false);
+  const [tempWalletName, setTempWalletName] = useState<string>('');
+  const [tempWalletLogo, setTempWalletLogo] = useState<string>('');
+
+  useEffect(() => {
+    const loadUserData = async () => {
+      try {
+        const savedWalletName = await AsyncStorage.getItem('walletName');
+        const savedWalletLogo = await AsyncStorage.getItem('walletLogo');
+        const savedTokenCount = await AsyncStorage.getItem('tokenDisplayCount');
+        if (savedWalletName) setWalletName(savedWalletName);
+        if (savedWalletLogo) setWalletLogo(savedWalletLogo);
+        if (savedTokenCount) setTokenDisplayCount(parseInt(savedTokenCount) || 10);
+      } catch (error) {
+        console.error('Error loading user data:', error);
+      }
+    };
+    loadUserData();
+  }, []);
+
+  useEffect(() => {
+    const updateMarketPrices = () => {
+      setSol((prev) => {
+        const newPrice = prev.price * (1 + (Math.random() * 0.2 - 0.1));
+        const newValue = prev.balance * newPrice;
+        const newChange = newValue - prev.value;
+        const newChangePercent = (newChange / prev.value) * 100 || 0;
+        return { ...prev, price: newPrice, value: newValue, change: newChange, changePercent: newChangePercent };
+      });
+
+      setTokens((prev) =>
+        prev.map((token) => {
+          const newPrice = token.price * (1 + (Math.random() * 0.2 - 0.1));
+          const newValue = token.balance * newPrice;
+          const newChange = newValue - token.value;
+          const newChangePercent = (newChange / token.value) * 100 || 0;
+          return { ...token, price: newPrice, value: newValue, change: newChange, changePercent: newChangePercent };
+        })
+      );
+    };
+
+    updateMarketPrices();
+    const interval = setInterval(updateMarketPrices, 10000);
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    const newTotalBalance = sol.value + tokens.reduce((sum, token) => sum + token.value, 0);
+    const prevTotalBalance = totalBalance || newTotalBalance;
+    const newBalanceChange = newTotalBalance - prevTotalBalance;
+    const newBalanceChangePercent = (newBalanceChange / prevTotalBalance) * 100 || 0;
+    setTotalBalance(newTotalBalance);
+    setBalanceChange(newBalanceChange);
+    setBalanceChangePercent(newBalanceChangePercent);
+  }, [sol, tokens]);
+
+  const saveUserData = async (key: string, value: string) => {
+    try {
+      await AsyncStorage.setItem(key, value);
+    } catch (error) {
+      console.error('Error saving user data:', error);
+    }
+  };
+
+  const handleTokenCountChange = (value: string) => {
+    const count = parseInt(value) || 10;
+    if (count > 0 && count <= 10) {
+      setTokenDisplayCount(count);
+      saveUserData('tokenDisplayCount', count.toString());
+    } else {
+      Alert.alert('Lỗi', 'Vui lòng nhập số từ 1 đến 10');
+    }
+  };
+
+  const handleSaveWalletInfo = () => {
+    if (tempWalletName) {
+      setWalletName(tempWalletName);
+      saveUserData('walletName', tempWalletName);
+    }
+    if (tempWalletLogo) {
+      setWalletLogo(tempWalletLogo);
+      saveUserData('walletLogo', tempWalletLogo);
+    }
+    setModalVisible(false);
+    setTempWalletName('');
+    setTempWalletLogo('');
+  };
+
+  const renderSol = () => {
+    const changeColor = sol.changePercent >= 0 ? '#00FF00' : '#FF0000';
+    return (
+      <View style={styles.tokenContainer}>
+        <View style={styles.tokenLogoContainer}>
+          <Image source={{ uri: sol.logo }} style={styles.tokenLogo} />
+          <Text style={styles.sIcon}>S</Text>
+        </View>
+        <View style={styles.tokenInfo}>
+          <Text style={styles.tokenName}>{sol.name}</Text>
+          <Text style={styles.tokenBalance}>
+            {sol.balance.toLocaleString()} {sol.symbol}
+          </Text>
+        </View>
+        <View style={styles.tokenValue}>
+          <Text style={styles.tokenPrice}>${sol.value.toFixed(2)}</Text>
+          {sol.change !== 0 && (
+            <Text style={[styles.tokenChange, { color: changeColor }]}>
+              {sol.change >= 0 ? '+' : ''}${sol.change.toFixed(2)} ({sol.changePercent.toFixed(2)}%)
+            </Text>
+          )}
+        </View>
+      </View>
+    );
+  };
+
+  const renderToken = ({ item }: { item: Token }) => {
+    const changeColor = item.changePercent >= 0 ? '#00FF00' : '#FF0000';
+    return (
+      <View style={styles.tokenContainer}>
+        <View style={styles.tokenLogoContainer}>
+          <Image source={{ uri: item.logo }} style={styles.tokenLogo} />
+          <Text style={styles.sIcon}>S</Text>
+        </View>
+        <View style={styles.tokenInfo}>
+          <Text style={styles.tokenName}>{item.name}</Text>
+          <Text style={styles.tokenBalance}>
+            {item.balance.toLocaleString()} {item.symbol}
+          </Text>
+        </View>
+        <View style={styles.tokenValue}>
+          <Text style={styles.tokenPrice}>${item.value.toFixed(2)}</Text>
+          {item.change !== 0 && (
+            <Text style={[styles.tokenChange, { color: changeColor }]}>
+              {item.change >= 0 ? '+' : ''}${item.change.toFixed(2)} ({item.changePercent.toFixed(2)}%)
+            </Text>
+          )}
+        </View>
+      </View>
+    );
+  };
+
+  return (
+    <View style={styles.container}>
+      <Modal visible={modalVisible} transparent animationType="slide">
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Chỉnh sửa thông tin ví</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Tên ví"
+              value={tempWalletName}
+              onChangeText={setTempWalletName}
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="URL logo ví"
+              value={tempWalletLogo}
+              onChangeText={setTempWalletLogo}
+            />
+            <View style={styles.modalButtons}>
+              <TouchableOpacity style={styles.modalButton} onPress={() => setModalVisible(false)}>
+                <Text style={styles.modalButtonText}>Hủy</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.modalButton} onPress={handleSaveWalletInfo}>
+                <Text style={styles.modalButtonText}>Lưu</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      <View style={styles.header}>
+        <TouchableOpacity style={styles.walletNameContainer} onPress={() => setModalVisible(true)}>
+          <Image source={{ uri: walletLogo }} style={styles.walletLogo} />
+          <Text style={styles.walletName}>{walletName}</Text>
+          <Ionicons name="chevron-down" size={20} color="#fff" />
+        </TouchableOpacity>
+        <View style={styles.headerIcons}>
+          <TouchableOpacity>
+            <Ionicons name="qr-code-outline" size={24} color="#fff" style={styles.headerIcon} />
+          </TouchableOpacity>
+          <TouchableOpacity>
+            <Ionicons name="search" size={24} color="#fff" style={styles.headerIcon} />
+          </TouchableOpacity>
+        </View>
+      </View>
+
+      <View style={styles.balanceContainer}>
+        <Text style={styles.balance}>${totalBalance.toFixed(2)}</Text>
+        <Text style={[styles.balanceChange, { color: balanceChangePercent >= 0 ? '#00FF00' : '#FF0000' }]}>
+          {balanceChange >= 0 ? '+' : ''}${balanceChange.toFixed(2)} ({balanceChangePercent.toFixed(2)}%)
+        </Text>
+      </View>
+
+      <View style={styles.buttonContainer}>
+        <TouchableOpacity style={styles.button}>
+          <Ionicons name="arrow-down-outline" size={24} color="#fff" />
+          <Text style={styles.buttonText}>Receive</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.button}>
+          <Ionicons name="arrow-up-outline" size={24} color="#fff" />
+          <Text style={styles.buttonText}>Send</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.button}>
+          <Ionicons name="swap-horizontal-outline" size={24} color="#fff" />
+          <Text style={styles.buttonText}>Swap</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.button}>
+          <Ionicons name="card-outline" size={24} color="#fff" />
+          <Text style={styles.buttonText}>Buy</Text>
+        </TouchableOpacity>
+      </View>
+
+      <View style={styles.tokenCountContainer}>
+        <Text style={styles.tokenCountLabel}>Số token hiển thị (1-10):</Text>
+        <TextInput
+          style={styles.tokenCountInput}
+          keyboardType="numeric"
+          value={tokenDisplayCount.toString()}
+          onChangeText={handleTokenCountChange}
+        />
+      </View>
+
+      {renderSol()}
+
+      <FlatList
+        data={tokens.slice(0, tokenDisplayCount)}
+        renderItem={renderToken}
+        keyExtractor={(item) => item.id}
+        style={styles.tokenList}
+      />
+    </View>
+  );
+};
+
+// Các màn hình placeholder
+const AppsScreen = () => (
+  <View style={styles.container}>
+    <Text style={styles.title}>Apps Screen</Text>
+  </View>
+);
+
+const ReloadScreen = () => (
+  <View style={styles.container}>
+    <Text style={styles.title}>Reload Screen</Text>
+  </View>
+);
+
+const ClockScreen = () => (
+  <View style={styles.container}>
+    <Text style={styles.title}>Clock Screen</Text>
+  </View>
+);
+
+const CompassScreen = () => (
+  <View style={styles.container}>
+    <Text style={styles.title}>Compass Screen</Text>
+  </View>
+);
+
+// Tạo Tab Navigator
+const Tab = createBottomTabNavigator();
+
+export default function App() {
+  return (
+    <NavigationContainer>
+      <Tab.Navigator
+        screenOptions={({ route }) => ({
+          tabBarIcon: ({ color, size }) => {
+            let iconName;
+            if (route.name === 'Home') iconName = 'home';
+            else if (route.name === 'Apps') iconName = 'apps';
+            else if (route.name === 'Reload') iconName = 'reload';
+            else if (route.name === 'Clock') iconName = 'time';
+            else if (route.name === 'Compass') iconName = 'compass';
+            return <Ionicons name={iconName} size={size + 4} color={color} />; // Tăng size icon
+          },
+          tabBarActiveTintColor: '#007AFF',
+          tabBarInactiveTintColor: '#888888',
+          tabBarStyle: {
+            backgroundColor: '#1a1a1a',
+            borderTopColor: '#2a2a2a',
+            borderTopWidth: 1,
+            height: Platform.OS === 'ios' ? 80 : 70, // Tùy chỉnh chiều cao
+            paddingBottom: Platform.OS === 'ios' ? 20 : 10, // Hỗ trợ notch/thanh điều hướng
+            paddingTop: 5,
+            elevation: 5, // Hiệu ứng nổi trên Android
+            shadowColor: '#000', // Hiệu ứng bóng trên iOS
+            shadowOffset: { width: 0, height: -1 },
+            shadowOpacity: 0.1,
+            shadowRadius: 2,
+          },
+          tabBarLabelStyle: {
+            fontSize: 12,
+            marginBottom: 5,
+          },
+          headerShown: false,
+        })}
+      >
+        <Tab.Screen name="Home" component={HomeScreen} />
+        <Tab.Screen name="Apps" component={AppsScreen} />
+        <Tab.Screen name="Reload" component={ReloadScreen} />
+        <Tab.Screen name="Clock" component={ClockScreen} />
+        <Tab.Screen name="Compass" component={CompassScreen} />
+      </Tab.Navigator>
+    </NavigationContainer>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#1a1a1a',
+    padding: 20,
+  },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  walletNameContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  walletLogo: {
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    marginRight: 10,
+  },
+  walletName: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginRight: 5,
+  },
+  headerIcons: {
+    flexDirection: 'row',
+  },
+  headerIcon: {
+    marginLeft: 15,
+  },
+  balanceContainer: {
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  balance: {
+    color: '#fff',
+    fontSize: 36,
+    fontWeight: 'bold',
+  },
+  balanceChange: {
+    fontSize: 16,
+    marginTop: 5,
+  },
+  buttonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 20,
+  },
+  button: {
+    alignItems: 'center',
+    backgroundColor: '#2a2a2a',
+    padding: 10,
+    borderRadius: 10,
+    flex: 1,
+    marginHorizontal: 5,
+  },
+  buttonText: {
+    color: '#fff',
+    fontSize: 14,
+    marginTop: 5,
+  },
+  tokenCountContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  tokenCountLabel: {
+    color: '#fff',
+    fontSize: 16,
+    marginRight: 10,
+  },
+  tokenCountInput: {
+    backgroundColor: '#2a2a2a',
+    color: '#fff',
+    borderRadius: 5,
+    padding: 5,
+    width: 50,
+    textAlign: 'center',
+  },
+  tokenContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#2a2a2a',
+    padding: 10,
+    borderRadius: 10,
+    marginBottom: 10,
+  },
+  tokenLogoContainer: {
+    position: 'relative',
+    marginRight: 10,
+  },
+  tokenLogo: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+  },
+  sIcon: {
+    position: 'absolute',
+    bottom: 0,
+    right: 0,
+    backgroundColor: '#fff',
+    color: '#000',
+    fontSize: 12,
+    fontWeight: 'bold',
+    borderRadius: 10,
+    padding: 2,
+  },
+  tokenInfo: {
+    flex: 1,
+  },
+  tokenName: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  tokenBalance: {
+    color: '#888',
+    fontSize: 14,
+  },
+  tokenValue: {
+    alignItems: 'flex-end',
+  },
+  tokenPrice: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  tokenChange: {
+    fontSize: 14,
+  },
+  tokenList: {
+    flex: 1,
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0.5)',
+  },
+  modalContent: {
+    backgroundColor: '#2a2a2a',
+    padding: 20,
+    borderRadius: 10,
+    width: '80%',
+  },
+  modalTitle: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 10,
+  },
+  input: {
+    backgroundColor: '#3a3a3a',
+    color: '#fff',
+    borderRadius: 5,
+    padding: 10,
+    marginBottom: 10,
+  },
+  modalButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  modalButton: {
+    padding: 10,
+  },
+  modalButtonText: {
+    color: '#007AFF',
+    fontSize: 16,
+  },
+  title: {
+    color: '#fff',
+    fontSize: 24,
+    fontWeight: 'bold',
+    textAlign: 'center',
+  },
+});
