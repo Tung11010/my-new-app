@@ -59,6 +59,7 @@ const initialMockData = {
 // Màn hình Home
 const HomeScreen: React.FC = () => {
   const [walletName, setWalletName] = useState<string>('@dynh');
+  const [walletNameInput, setWalletNameInput] = useState<string>('Tài khoản 1');
   const [walletLogo, setWalletLogo] = useState<string>('https://via.placeholder.com/40');
   const [solBalance, setSolBalance] = useState<number>(0.5);
   const [totalBalance, setTotalBalance] = useState<number>(0);
@@ -69,6 +70,7 @@ const HomeScreen: React.FC = () => {
   const [tokenDisplayCount, setTokenDisplayCount] = useState<number>(10);
   const [modalVisible, setModalVisible] = useState<boolean>(false);
   const [tempWalletName, setTempWalletName] = useState<string>('');
+  const [tempWalletNameInput, setTempWalletNameInput] = useState<string>('');
   const [tempWalletLogo, setTempWalletLogo] = useState<string>('');
   const [tempSolBalance, setTempSolBalance] = useState<string>('0.5');
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -79,10 +81,12 @@ const HomeScreen: React.FC = () => {
       try {
         setIsLoading(true);
         const savedWalletName = await AsyncStorage.getItem('walletName');
+        const savedWalletNameInput = await AsyncStorage.getItem('walletNameInput');
         const savedWalletLogo = await AsyncStorage.getItem('walletLogo');
         const savedSolBalance = await AsyncStorage.getItem('solBalance');
         const savedTokenCount = await AsyncStorage.getItem('tokenDisplayCount');
         if (savedWalletName) setWalletName(savedWalletName);
+        if (savedWalletNameInput) setWalletNameInput(savedWalletNameInput);
         if (savedWalletLogo) setWalletLogo(savedWalletLogo);
         if (savedSolBalance) {
           setSolBalance(parseFloat(savedSolBalance) || 0.5);
@@ -163,6 +167,7 @@ const HomeScreen: React.FC = () => {
   // Xử lý lưu thông tin ví
   const handleSaveWalletInfo = () => {
     const newWalletName = tempWalletName || `@user${Math.floor(Math.random() * 1000)}`;
+    const newWalletNameInput = tempWalletNameInput || `Tài khoản ${Math.floor(Math.random() * 100)}`;
     const newWalletLogo = tempWalletLogo || sampleLogos[Math.floor(Math.random() * sampleLogos.length)];
     const newSolBalance = parseFloat(tempSolBalance) || 0.5;
 
@@ -172,20 +177,23 @@ const HomeScreen: React.FC = () => {
     }
 
     setWalletName(newWalletName);
+    setWalletNameInput(newWalletNameInput);
     setWalletLogo(newWalletLogo);
     setSolBalance(newSolBalance);
     saveUserData('walletName', newWalletName);
+    saveUserData('walletNameInput', newWalletNameInput);
     saveUserData('walletLogo', newWalletLogo);
     saveUserData('solBalance', newSolBalance.toString());
     setModalVisible(false);
     setTempWalletName('');
+    setTempWalletNameInput('');
     setTempWalletLogo('');
     setTempSolBalance(newSolBalance.toString());
   };
 
   // Render Solana
   const renderSol = useCallback(() => {
-    const changeColor = sol.changePercent >= 0 ? '#00FF00' : '#FF0000';
+    const changeColor = sol.changePercent >= 0 ? '#34C759' : '#FF3B30';
     return (
       <View style={styles.tokenContainer}>
         <View style={styles.tokenLogoContainer}>
@@ -212,7 +220,7 @@ const HomeScreen: React.FC = () => {
 
   // Render token
   const renderToken = useCallback(({ item }: { item: Token }) => {
-    const changeColor = item.changePercent >= 0 ? '#00FF00' : '#FF0000';
+    const changeColor = item.changePercent >= 0 ? '#34C759' : '#FF3B30';
     return (
       <View style={styles.tokenContainer}>
         <View style={styles.tokenLogoContainer}>
@@ -251,6 +259,12 @@ const HomeScreen: React.FC = () => {
             />
             <TextInput
               style={styles.input}
+              placeholder="Tên tài khoản (để trống để tạo ngẫu nhiên)"
+              value={tempWalletNameInput}
+              onChangeText={setTempWalletNameInput}
+            />
+            <TextInput
+              style={styles.input}
               placeholder="URL logo ví (để trống để chọn ngẫu nhiên)"
               value={tempWalletLogo}
               onChangeText={setTempWalletLogo}
@@ -282,42 +296,45 @@ const HomeScreen: React.FC = () => {
 
       <View style={styles.header}>
         <TouchableOpacity style={styles.walletNameContainer} onPress={() => setModalVisible(true)}>
-          <Image source={{ uri: walletLogo }} style={styles.walletLogo} />
-          <Text style={styles.walletName}>{walletName}</Text>
-          <Ionicons name="chevron-down" size={20} color="#fff" />
+          <Image source={{ uri: walletLogo }} style={styles.tokenLogo} />
+          <View style={styles.walletNameWrapper}>
+            <Text style={styles.walletName}>{walletName}</Text>
+            <Text style={styles.walletNameInput}>{walletNameInput}</Text>
+          </View>
+          <Ionicons name="chevron-down" size={20} color="#FFFFFF" />
         </TouchableOpacity>
         <View style={styles.headerIcons}>
           <TouchableOpacity>
-            <Ionicons name="qr-code-outline" size={24} color="#fff" style={styles.headerIcon} />
+            <Ionicons name="qr-code-outline" size={24} color="#FFFFFF" style={styles.headerIcon} />
           </TouchableOpacity>
           <TouchableOpacity>
-            <Ionicons name="search" size={24} color="#fff" style={styles.headerIcon} />
+            <Ionicons name="search" size={24} color="#FFFFFF" style={styles.headerIcon} />
           </TouchableOpacity>
         </View>
       </View>
 
       <View style={styles.balanceContainer}>
         <Text style={styles.balance}>${totalBalance.toFixed(2)}</Text>
-        <Text style={[styles.balanceChange, { color: balanceChangePercent >= 0 ? '#00FF00' : '#FF0000' }]}>
+        <Text style={[styles.balanceChange, { color: balanceChangePercent >= 0 ? '#34C759' : '#FF3B30' }]}>
           {balanceChange >= 0 ? '+' : ''}${balanceChange.toFixed(2)} ({balanceChangePercent.toFixed(2)}%)
         </Text>
       </View>
 
       <View style={styles.buttonContainer}>
         <TouchableOpacity style={styles.button}>
-          <Ionicons name="arrow-down-outline" size={24} color="#fff" />
+          <Ionicons name="arrow-down-outline" size={24} color="#FFFFFF" />
           <Text style={styles.buttonText}>Receive</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.button}>
-          <Ionicons name="arrow-up-outline" size={24} color="#fff" />
+          <Ionicons name="arrow-up-outline" size={24} color="#FFFFFF" />
           <Text style={styles.buttonText}>Send</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.button}>
-          <Ionicons name="swap-horizontal-outline" size={24} color="#fff" />
+          <Ionicons name="swap-horizontal-outline" size={24} color="#FFFFFF" />
           <Text style={styles.buttonText}>Swap</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.button}>
-          <Ionicons name="card-outline" size={24} color="#fff" />
+          <Ionicons name="card-outline" size={24} color="#FFFFFF" />
           <Text style={styles.buttonText}>Buy</Text>
         </TouchableOpacity>
       </View>
@@ -387,10 +404,10 @@ export default function App() {
             return <Ionicons name={iconName} size={size + 4} color={color} />;
           },
           tabBarActiveTintColor: '#007AFF',
-          tabBarInactiveTintColor: '#888888',
+          tabBarInactiveTintColor: '#A6B0C3',
           tabBarStyle: {
-            backgroundColor: '#1a1a1a',
-            borderTopColor: '#2a2a2a',
+            backgroundColor: '#131A2A',
+            borderTopColor: '#242E42',
             borderTopWidth: 1,
             height: Platform.OS === 'ios' ? 80 : 70,
             paddingBottom: Platform.OS === 'ios' ? 20 : 10,
@@ -421,7 +438,7 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#131A2A',
     padding: 20,
   },
   header: {
@@ -434,16 +451,25 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
+  walletNameWrapper: {
+    flexDirection: 'column',
+    justifyContent: 'center',
+  },
   walletLogo: {
-    width: 30,
-    height: 30,
-    borderRadius: 15,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     marginRight: 10,
   },
   walletName: {
-    color: '#fff',
+    color: '#FFFFFF',
     fontSize: 18,
     fontWeight: 'bold',
+    marginRight: 5,
+  },
+  walletNameInput: {
+    color: '#A6B0C3',
+    fontSize: 14,
     marginRight: 5,
   },
   headerIcons: {
@@ -457,7 +483,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   balance: {
-    color: '#fff',
+    color: '#FFFFFF',
     fontSize: 36,
     fontWeight: 'bold',
   },
@@ -472,14 +498,14 @@ const styles = StyleSheet.create({
   },
   button: {
     alignItems: 'center',
-    backgroundColor: '#2a2a2a',
+    backgroundColor: '#242E42',
     padding: 10,
     borderRadius: 10,
     flex: 1,
     marginHorizontal: 5,
   },
   buttonText: {
-    color: '#fff',
+    color: '#FFFFFF',
     fontSize: 14,
     marginTop: 5,
   },
@@ -489,13 +515,13 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   tokenCountLabel: {
-    color: '#fff',
+    color: '#FFFFFF',
     fontSize: 16,
     marginRight: 10,
   },
   tokenCountInput: {
-    backgroundColor: '#2a2a2a',
-    color: '#fff',
+    backgroundColor: '#242E42',
+    color: '#FFFFFF',
     borderRadius: 5,
     padding: 5,
     width: 50,
@@ -504,7 +530,7 @@ const styles = StyleSheet.create({
   tokenContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#2a2a2a',
+    backgroundColor: '#242E42',
     padding: 10,
     borderRadius: 10,
     marginBottom: 10,
@@ -522,32 +548,32 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: -2,
     right: -2,
-    backgroundColor: '#fff',
-    color: '#000',
+    backgroundColor: '#FFFFFF',
+    color: '#000000',
     fontSize: 12,
     fontWeight: 'bold',
     borderRadius: 10,
     padding: 2,
     borderWidth: 1,
-    borderColor: '#1a1a1a',
+    borderColor: '#131A2A',
   },
   tokenInfo: {
     flex: 1,
   },
   tokenName: {
-    color: '#fff',
+    color: '#FFFFFF',
     fontSize: 16,
     fontWeight: 'bold',
   },
   tokenBalance: {
-    color: '#888',
+    color: '#A6B0C3',
     fontSize: 14,
   },
   tokenValue: {
     alignItems: 'flex-end',
   },
   tokenPrice: {
-    color: '#fff',
+    color: '#FFFFFF',
     fontSize: 16,
     fontWeight: 'bold',
   },
@@ -564,20 +590,20 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.5)',
   },
   modalContent: {
-    backgroundColor: '#2a2a2a',
+    backgroundColor: '#242E42',
     padding: 20,
     borderRadius: 10,
     width: '80%',
   },
   modalTitle: {
-    color: '#fff',
+    color: '#FFFFFF',
     fontSize: 18,
     fontWeight: 'bold',
     marginBottom: 10,
   },
   input: {
-    backgroundColor: '#3a3a3a',
-    color: '#fff',
+    backgroundColor: '#242E42',
+    color: '#FFFFFF',
     borderRadius: 5,
     padding: 10,
     marginBottom: 10,
@@ -594,7 +620,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   title: {
-    color: '#fff',
+    color: '#FFFFFF',
     fontSize: 24,
     fontWeight: 'bold',
     textAlign: 'center',
