@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, Image, TextInput, FlatList, TouchableOpacity, StyleSheet, Modal, Alert, Platform } from 'react-native';
+import React, { useState, useEffect, useCallback } from 'react';
+import { View, Text, Image, TextInput, FlatList, TouchableOpacity, StyleSheet, Modal, Alert, Platform, ActivityIndicator } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
 import { NavigationContainer } from '@react-navigation/native';
@@ -17,6 +17,14 @@ interface Token {
   changePercent: number;
   logo: string;
 }
+
+// Danh sách logo mẫu
+const sampleLogos = [
+  'https://cryptologos.cc/logos/solana-sol-logo.png',
+  'https://cryptologos.cc/logos/usd-coin-usdc-logo.png',
+  'https://cryptologos.cc/logos/serum-srm-logo.png',
+  'https://via.placeholder.com/40',
+];
 
 // Dữ liệu giả lập
 const initialMockData = {
@@ -52,6 +60,7 @@ const initialMockData = {
 const HomeScreen: React.FC = () => {
   const [walletName, setWalletName] = useState<string>('@dynh');
   const [walletLogo, setWalletLogo] = useState<string>('https://via.placeholder.com/40');
+  const [solBalance, setSolBalance] = useState<number>(0.5);
   const [totalBalance, setTotalBalance] = useState<number>(0);
   const [balanceChange, setBalanceChange] = useState<number>(0);
   const [balanceChangePercent, setBalanceChangePercent] = useState<number>(0);
@@ -61,31 +70,45 @@ const HomeScreen: React.FC = () => {
   const [modalVisible, setModalVisible] = useState<boolean>(false);
   const [tempWalletName, setTempWalletName] = useState<string>('');
   const [tempWalletLogo, setTempWalletLogo] = useState<string>('');
+  const [tempSolBalance, setTempSolBalance] = useState<string>('0.5');
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
+  // Tải dữ liệu từ AsyncStorage
   useEffect(() => {
     const loadUserData = async () => {
       try {
+        setIsLoading(true);
         const savedWalletName = await AsyncStorage.getItem('walletName');
         const savedWalletLogo = await AsyncStorage.getItem('walletLogo');
+        const savedSolBalance = await AsyncStorage.getItem('solBalance');
         const savedTokenCount = await AsyncStorage.getItem('tokenDisplayCount');
         if (savedWalletName) setWalletName(savedWalletName);
         if (savedWalletLogo) setWalletLogo(savedWalletLogo);
+        if (savedSolBalance) {
+          setSolBalance(parseFloat(savedSolBalance) || 0.5);
+          setTempSolBalance(savedSolBalance);
+        }
         if (savedTokenCount) setTokenDisplayCount(parseInt(savedTokenCount) || 10);
       } catch (error) {
         console.error('Error loading user data:', error);
+        Alert.alert('Lỗi', 'Không thể tải dữ liệu ví');
+      } finally {
+        setIsLoading(false);
       }
     };
     loadUserData();
   }, []);
 
+  // Cập nhật giá thị trường
   useEffect(() => {
     const updateMarketPrices = () => {
+      setIsLoading(true);
       setSol((prev) => {
         const newPrice = prev.price * (1 + (Math.random() * 0.2 - 0.1));
-        const newValue = prev.balance * newPrice;
+        const newValue = solBalance * newPrice;
         const newChange = newValue - prev.value;
-        const newChangePercent = (newChange / prev.value) * 100 || 0;
-        return { ...prev, price: newPrice, value: newValue, change: newChange, changePercent: newChangePercent };
+        const newChangePercent = prev.value ? (newChange / prev.value) * 100 : 0;
+        return { ...prev, price: newPrice, value: newValue, change: newChange, changePercent: newChangePercent, balance: solBalance };
       });
 
       setTokens((prev) =>
@@ -93,60 +116,75 @@ const HomeScreen: React.FC = () => {
           const newPrice = token.price * (1 + (Math.random() * 0.2 - 0.1));
           const newValue = token.balance * newPrice;
           const newChange = newValue - token.value;
-          const newChangePercent = (newChange / token.value) * 100 || 0;
+          const newChangePercent = token.value ? (newChange / token.value) * 100 : 0;
           return { ...token, price: newPrice, value: newValue, change: newChange, changePercent: newChangePercent };
         })
       );
+      setIsLoading(false);
     };
 
     updateMarketPrices();
-    const interval = setInterval(updateMarketPrices, 10000);
+    const interval = setInterval(updateMarketPrices, 5000); // Cập nhật mỗi 5 giây
     return () => clearInterval(interval);
-  }, []);
+  }, [solBalance]);
 
+  // Tính tổng số dư
   useEffect(() => {
     const newTotalBalance = sol.value + tokens.reduce((sum, token) => sum + token.value, 0);
     const prevTotalBalance = totalBalance || newTotalBalance;
     const newBalanceChange = newTotalBalance - prevTotalBalance;
-    const newBalanceChangePercent = (newBalanceChange / prevTotalBalance) * 100 || 0;
+    const newBalanceChangePercent = prevTotalBalance ? (newBalanceChange / prevTotalBalance) * 100 : 0;
     setTotalBalance(newTotalBalance);
     setBalanceChange(newBalanceChange);
     setBalanceChangePercent(newBalanceChangePercent);
-  }, [sol, tokens]);
+  }, [sol, tokens, totalBalance]);
 
+  // Lưu dữ liệu vào AsyncStorage
   const saveUserData = async (key: string, value: string) => {
     try {
       await AsyncStorage.setItem(key, value);
     } catch (error) {
       console.error('Error saving user data:', error);
+      Alert.alert('Lỗi', 'Không thể lưu dữ liệu ví');
     }
   };
 
+  // Xử lý thay đổi số lượng token hiển thị
   const handleTokenCountChange = (value: string) => {
-    const count = parseInt(value) || 10;
-    if (count > 0 && count <= 10) {
-      setTokenDisplayCount(count);
-      saveUserData('tokenDisplayCount', count.toString());
-    } else {
+    const count = parseInt(value);
+    if (isNaN(count) || count < 1 || count > 10) {
       Alert.alert('Lỗi', 'Vui lòng nhập số từ 1 đến 10');
+      return;
     }
+    setTokenDisplayCount(count);
+    saveUserData('tokenDisplayCount', count.toString());
   };
 
+  // Xử lý lưu thông tin ví
   const handleSaveWalletInfo = () => {
-    if (tempWalletName) {
-      setWalletName(tempWalletName);
-      saveUserData('walletName', tempWalletName);
+    const newWalletName = tempWalletName || `@user${Math.floor(Math.random() * 1000)}`;
+    const newWalletLogo = tempWalletLogo || sampleLogos[Math.floor(Math.random() * sampleLogos.length)];
+    const newSolBalance = parseFloat(tempSolBalance) || 0.5;
+
+    if (newSolBalance < 0) {
+      Alert.alert('Lỗi', 'Số dư SOL không thể âm');
+      return;
     }
-    if (tempWalletLogo) {
-      setWalletLogo(tempWalletLogo);
-      saveUserData('walletLogo', tempWalletLogo);
-    }
+
+    setWalletName(newWalletName);
+    setWalletLogo(newWalletLogo);
+    setSolBalance(newSolBalance);
+    saveUserData('walletName', newWalletName);
+    saveUserData('walletLogo', newWalletLogo);
+    saveUserData('solBalance', newSolBalance.toString());
     setModalVisible(false);
     setTempWalletName('');
     setTempWalletLogo('');
+    setTempSolBalance(newSolBalance.toString());
   };
 
-  const renderSol = () => {
+  // Render Solana
+  const renderSol = useCallback(() => {
     const changeColor = sol.changePercent >= 0 ? '#00FF00' : '#FF0000';
     return (
       <View style={styles.tokenContainer}>
@@ -157,7 +195,7 @@ const HomeScreen: React.FC = () => {
         <View style={styles.tokenInfo}>
           <Text style={styles.tokenName}>{sol.name}</Text>
           <Text style={styles.tokenBalance}>
-            {sol.balance.toLocaleString()} {sol.symbol}
+            {sol.balance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} {sol.symbol}
           </Text>
         </View>
         <View style={styles.tokenValue}>
@@ -170,9 +208,10 @@ const HomeScreen: React.FC = () => {
         </View>
       </View>
     );
-  };
+  }, [sol]);
 
-  const renderToken = ({ item }: { item: Token }) => {
+  // Render token
+  const renderToken = useCallback(({ item }: { item: Token }) => {
     const changeColor = item.changePercent >= 0 ? '#00FF00' : '#FF0000';
     return (
       <View style={styles.tokenContainer}>
@@ -183,7 +222,7 @@ const HomeScreen: React.FC = () => {
         <View style={styles.tokenInfo}>
           <Text style={styles.tokenName}>{item.name}</Text>
           <Text style={styles.tokenBalance}>
-            {item.balance.toLocaleString()} {item.symbol}
+            {item.balance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} {item.symbol}
           </Text>
         </View>
         <View style={styles.tokenValue}>
@@ -196,7 +235,7 @@ const HomeScreen: React.FC = () => {
         </View>
       </View>
     );
-  };
+  }, []);
 
   return (
     <View style={styles.container}>
@@ -206,15 +245,22 @@ const HomeScreen: React.FC = () => {
             <Text style={styles.modalTitle}>Chỉnh sửa thông tin ví</Text>
             <TextInput
               style={styles.input}
-              placeholder="Tên ví"
+              placeholder="Tên ví (để trống để tạo ngẫu nhiên)"
               value={tempWalletName}
               onChangeText={setTempWalletName}
             />
             <TextInput
               style={styles.input}
-              placeholder="URL logo ví"
+              placeholder="URL logo ví (để trống để chọn ngẫu nhiên)"
               value={tempWalletLogo}
               onChangeText={setTempWalletLogo}
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="Số dư SOL"
+              keyboardType="numeric"
+              value={tempSolBalance}
+              onChangeText={setTempSolBalance}
             />
             <View style={styles.modalButtons}>
               <TouchableOpacity style={styles.modalButton} onPress={() => setModalVisible(false)}>
@@ -227,6 +273,12 @@ const HomeScreen: React.FC = () => {
           </View>
         </View>
       </Modal>
+
+      {isLoading && (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#007AFF" />
+        </View>
+      )}
 
       <View style={styles.header}>
         <TouchableOpacity style={styles.walletNameContainer} onPress={() => setModalVisible(true)}>
@@ -332,7 +384,7 @@ export default function App() {
             else if (route.name === 'Reload') iconName = 'reload';
             else if (route.name === 'Clock') iconName = 'time';
             else if (route.name === 'Compass') iconName = 'compass';
-            return <Ionicons name={iconName} size={size + 4} color={color} />; // Tăng size icon
+            return <Ionicons name={iconName} size={size + 4} color={color} />;
           },
           tabBarActiveTintColor: '#007AFF',
           tabBarInactiveTintColor: '#888888',
@@ -340,11 +392,11 @@ export default function App() {
             backgroundColor: '#1a1a1a',
             borderTopColor: '#2a2a2a',
             borderTopWidth: 1,
-            height: Platform.OS === 'ios' ? 80 : 70, // Tùy chỉnh chiều cao
-            paddingBottom: Platform.OS === 'ios' ? 20 : 10, // Hỗ trợ notch/thanh điều hướng
+            height: Platform.OS === 'ios' ? 80 : 70,
+            paddingBottom: Platform.OS === 'ios' ? 20 : 10,
             paddingTop: 5,
-            elevation: 5, // Hiệu ứng nổi trên Android
-            shadowColor: '#000', // Hiệu ứng bóng trên iOS
+            elevation: 5,
+            shadowColor: '#000',
             shadowOffset: { width: 0, height: -1 },
             shadowOpacity: 0.1,
             shadowRadius: 2,
@@ -468,14 +520,16 @@ const styles = StyleSheet.create({
   },
   sIcon: {
     position: 'absolute',
-    bottom: 0,
-    right: 0,
+    bottom: -2,
+    right: -2,
     backgroundColor: '#fff',
     color: '#000',
     fontSize: 12,
     fontWeight: 'bold',
     borderRadius: 10,
     padding: 2,
+    borderWidth: 1,
+    borderColor: '#1a1a1a',
   },
   tokenInfo: {
     flex: 1,
@@ -544,5 +598,15 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
     textAlign: 'center',
+  },
+  loadingContainer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0.3)',
   },
 });
