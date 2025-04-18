@@ -59,6 +59,7 @@ const initialMockData = {
 // Màn hình Home
 const HomeScreen: React.FC = () => {
   const [walletName, setWalletName] = useState<string>('@dynh');
+  const [walletNameInput, setWalletNameInput] = useState<string>('Tài khoản 1');
   const [walletLogo, setWalletLogo] = useState<string>('https://via.placeholder.com/40');
   const [solBalance, setSolBalance] = useState<number>(0.5);
   const [totalBalance, setTotalBalance] = useState<number>(0);
@@ -69,6 +70,7 @@ const HomeScreen: React.FC = () => {
   const [tokenDisplayCount, setTokenDisplayCount] = useState<number>(10);
   const [modalVisible, setModalVisible] = useState<boolean>(false);
   const [tempWalletName, setTempWalletName] = useState<string>('');
+  const [tempWalletNameInput, setTempWalletNameInput] = useState<string>('');
   const [tempWalletLogo, setTempWalletLogo] = useState<string>('');
   const [tempSolBalance, setTempSolBalance] = useState<string>('0.5');
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -79,10 +81,12 @@ const HomeScreen: React.FC = () => {
       try {
         setIsLoading(true);
         const savedWalletName = await AsyncStorage.getItem('walletName');
+        const savedWalletNameInput = await AsyncStorage.getItem('walletNameInput');
         const savedWalletLogo = await AsyncStorage.getItem('walletLogo');
         const savedSolBalance = await AsyncStorage.getItem('solBalance');
         const savedTokenCount = await AsyncStorage.getItem('tokenDisplayCount');
         if (savedWalletName) setWalletName(savedWalletName);
+        if (savedWalletNameInput) setWalletNameInput(savedWalletNameInput);
         if (savedWalletLogo) setWalletLogo(savedWalletLogo);
         if (savedSolBalance) {
           setSolBalance(parseFloat(savedSolBalance) || 0.5);
@@ -163,6 +167,7 @@ const HomeScreen: React.FC = () => {
   // Xử lý lưu thông tin ví
   const handleSaveWalletInfo = () => {
     const newWalletName = tempWalletName || `@user${Math.floor(Math.random() * 1000)}`;
+    const newWalletNameInput = tempWalletNameInput || `Tài khoản ${Math.floor(Math.random() * 100)}`;
     const newWalletLogo = tempWalletLogo || sampleLogos[Math.floor(Math.random() * sampleLogos.length)];
     const newSolBalance = parseFloat(tempSolBalance) || 0.5;
 
@@ -172,13 +177,16 @@ const HomeScreen: React.FC = () => {
     }
 
     setWalletName(newWalletName);
+    setWalletNameInput(newWalletNameInput);
     setWalletLogo(newWalletLogo);
     setSolBalance(newSolBalance);
     saveUserData('walletName', newWalletName);
+    saveUserData('walletNameInput', newWalletNameInput);
     saveUserData('walletLogo', newWalletLogo);
     saveUserData('solBalance', newSolBalance.toString());
     setModalVisible(false);
     setTempWalletName('');
+    setTempWalletNameInput('');
     setTempWalletLogo('');
     setTempSolBalance(newSolBalance.toString());
   };
@@ -251,6 +259,12 @@ const HomeScreen: React.FC = () => {
             />
             <TextInput
               style={styles.input}
+              placeholder="Tên tài khoản (để trống để tạo ngẫu nhiên)"
+              value={tempWalletNameInput}
+              onChangeText={setTempWalletNameInput}
+            />
+            <TextInput
+              style={styles.input}
               placeholder="URL logo ví (để trống để chọn ngẫu nhiên)"
               value={tempWalletLogo}
               onChangeText={setTempWalletLogo}
@@ -283,7 +297,10 @@ const HomeScreen: React.FC = () => {
       <View style={styles.header}>
         <TouchableOpacity style={styles.walletNameContainer} onPress={() => setModalVisible(true)}>
           <Image source={{ uri: walletLogo }} style={styles.tokenLogo} />
-          <Text style={styles.walletName}>{walletName}</Text>
+          <View style={styles.walletNameWrapper}>
+            <Text style={styles.walletName}>{walletName}</Text>
+            <Text style={styles.walletNameInput}>{walletNameInput}</Text>
+          </View>
           <Ionicons name="chevron-down" size={20} color="#FFFFFF" />
         </TouchableOpacity>
         <View style={styles.headerIcons}>
@@ -434,6 +451,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
+  walletNameWrapper: {
+    flexDirection: 'column',
+    justifyContent: 'center',
+  },
   walletLogo: {
     width: 40,
     height: 40,
@@ -444,6 +465,11 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 18,
     fontWeight: 'bold',
+    marginRight: 5,
+  },
+  walletNameInput: {
+    color: '#A6B0C3',
+    fontSize: 14,
     marginRight: 5,
   },
   headerIcons: {
