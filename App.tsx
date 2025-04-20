@@ -1,9 +1,16 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, Image, TextInput, FlatList, TouchableOpacity, StyleSheet, Modal, Alert, Platform, ActivityIndicator } from 'react-native';
+import { View, Text, Image, TextInput, FlatList, TouchableOpacity, Modal, Alert, Platform, ActivityIndicator } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import styles from './styles';
+
+// Import hình ảnh từ thư mục assets/images
+import solanaLogo from './assets/images/solana.png';
+import usdcLogo from './assets/images/usdc.png';
+import serumLogo from './assets/images/serum.png';
+import accountIcon from './assets/images/accountIcon.png';
 
 // Định nghĩa kiểu dữ liệu cho token
 interface Token {
@@ -15,15 +22,15 @@ interface Token {
   value: number;
   change: number;
   changePercent: number;
-  logo: string;
+  logo: any;
 }
 
 // Danh sách logo mẫu
 const sampleLogos = [
-  'https://cryptologos.cc/logos/solana-sol-logo.png',
-  'https://cryptologos.cc/logos/usd-coin-usdc-logo.png',
-  'https://cryptologos.cc/logos/serum-srm-logo.png',
-  'https://via.placeholder.com/40',
+  solanaLogo,
+  usdcLogo,
+  serumLogo,
+  accountIcon,
 ];
 
 // Dữ liệu giả lập
@@ -40,19 +47,19 @@ const initialMockData = {
     value: 0,
     change: 0,
     changePercent: 0,
-    logo: 'https://cryptologos.cc/logos/solana-sol-logo.png',
+    logo: solanaLogo,
   },
   tokens: [
-    { id: '1', name: 'USDC', symbol: 'USDC', balance: 100, price: 1, value: 100, change: 0, changePercent: 0, logo: 'https://cryptologos.cc/logos/usd-coin-usdc-logo.png' },
-    { id: '2', name: 'Serum', symbol: 'SRM', balance: 200, price: 0.03, value: 6, change: 0, changePercent: 0, logo: 'https://cryptologos.cc/logos/serum-srm-logo.png' },
-    { id: '3', name: 'Raydium', symbol: 'RAY', balance: 50, price: 1.5, value: 75, change: 0, changePercent: 0, logo: 'https://cryptologos.cc/logos/raydium-ray-logo.png' },
-    { id: '4', name: 'Saber', symbol: 'SBR', balance: 1000, price: 0.002, value: 2, change: 0, changePercent: 0, logo: 'https://via.placeholder.com/40' },
-    { id: '5', name: 'Orca', symbol: 'ORCA', balance: 20, price: 2.5, value: 50, change: 0, changePercent: 0, logo: 'https://via.placeholder.com/40' },
-    { id: '6', name: 'Mango', symbol: 'MNGO', balance: 300, price: 0.02, value: 6, change: 0, changePercent: 0, logo: 'https://via.placeholder.com/40' },
-    { id: '7', name: 'Jito', symbol: 'JTO', balance: 10, price: 3, value: 30, change: 0, changePercent: 0, logo: 'https://via.placeholder.com/40' },
-    { id: '8', name: 'Bonfida', symbol: 'FIDA', balance: 150, price: 0.25, value: 37.5, change: 0, changePercent: 0, logo: 'https://via.placeholder.com/40' },
-    { id: '9', name: 'Marinade', symbol: 'MNDE', balance: 200, price: 0.1, value: 20, change: 0, changePercent: 0, logo: 'https://via.placeholder.com/40' },
-    { id: '10', name: 'Drift', symbol: 'DRIFT', balance: 80, price: 0.5, value: 40, change: 0, changePercent: 0, logo: 'https://via.placeholder.com/40' },
+    { id: '1', name: 'USDC', symbol: 'USDC', balance: 100, price: 1, value: 100, change: 0, changePercent: 0, logo: usdcLogo },
+    { id: '2', name: 'Serum', symbol: 'SRM', balance: 200, price: 0.03, value: 6, change: 0, changePercent: 0, logo: serumLogo },
+    { id: '3', name: 'Raydium', symbol: 'RAY', balance: 50, price: 1.5, value: 75, change: 0, changePercent: 0, logo: accountIcon },
+    { id: '4', name: 'Saber', symbol: 'SBR', balance: 1000, price: 0.002, value: 2, change: 0, changePercent: 0, logo: accountIcon },
+    { id: '5', name: 'Orca', symbol: 'ORCA', balance: 20, price: 2.5, value: 50, change: 0, changePercent: 0, logo: accountIcon },
+    { id: '6', name: 'Mango', symbol: 'MNGO', balance: 300, price: 0.02, value: 6, change: 0, changePercent: 0, logo: accountIcon },
+    { id: '7', name: 'Jito', symbol: 'JTO', balance: 10, price: 3, value: 30, change: 0, changePercent: 0, logo: accountIcon },
+    { id: '8', name: 'Bonfida', symbol: 'FIDA', balance: 150, price: 0.25, value: 37.5, change: 0, changePercent: 0, logo: accountIcon },
+    { id: '9', name: 'Marinade', symbol: 'MNDE', balance: 200, price: 0.1, value: 20, change: 0, changePercent: 0, logo: accountIcon },
+    { id: '10', name: 'Drift', symbol: 'DRIFT', balance: 80, price: 0.5, value: 40, change: 0, changePercent: 0, logo: accountIcon },
   ],
 };
 
@@ -60,7 +67,7 @@ const initialMockData = {
 const HomeScreen: React.FC = () => {
   const [walletName, setWalletName] = useState<string>('@dynh');
   const [walletNameInput, setWalletNameInput] = useState<string>('Tài khoản 1');
-  const [walletLogo, setWalletLogo] = useState<string>('https://via.placeholder.com/40');
+  const [walletLogo, setWalletLogo] = useState<any>(accountIcon);
   const [solBalance, setSolBalance] = useState<number>(0.5);
   const [totalBalance, setTotalBalance] = useState<number>(0);
   const [balanceChange, setBalanceChange] = useState<number>(0);
@@ -180,7 +187,7 @@ const HomeScreen: React.FC = () => {
     setWalletNameInput(newWalletNameInput);
     setWalletLogo(newWalletLogo);
     setSolBalance(newSolBalance);
-    saveUserData('walletName', newWalletName);
+    saveUserData('walletName', newWalletName); // Sửa từ save wikipediaData thành saveUserData
     saveUserData('walletNameInput', newWalletNameInput);
     saveUserData('walletLogo', newWalletLogo);
     saveUserData('solBalance', newSolBalance.toString());
@@ -197,7 +204,7 @@ const HomeScreen: React.FC = () => {
     return (
       <View style={styles.tokenContainer}>
         <View style={styles.tokenLogoContainer}>
-          <Image source={{ uri: sol.logo }} style={styles.tokenLogo} />
+          <Image source={sol.logo} style={styles.tokenLogo} />
           <Text style={styles.sIcon}>S</Text>
         </View>
         <View style={styles.tokenInfo}>
@@ -224,7 +231,7 @@ const HomeScreen: React.FC = () => {
     return (
       <View style={styles.tokenContainer}>
         <View style={styles.tokenLogoContainer}>
-          <Image source={{ uri: item.logo }} style={styles.tokenLogo} />
+          <Image source={item.logo} style={styles.tokenLogo} />
           <Text style={styles.sIcon}>S</Text>
         </View>
         <View style={styles.tokenInfo}>
@@ -253,7 +260,7 @@ const HomeScreen: React.FC = () => {
             <Text style={styles.modalTitle}>Chỉnh sửa thông tin ví</Text>
             <TextInput
               style={styles.input}
-              placeholder="Tên ví (để trống để tạo ngẫu nhiên)"
+              placeholder="Tên ví (để trống để tạo ngau nhiên)"
               value={tempWalletName}
               onChangeText={setTempWalletName}
             />
@@ -296,7 +303,8 @@ const HomeScreen: React.FC = () => {
 
       <View style={styles.header}>
         <TouchableOpacity style={styles.walletNameContainer} onPress={() => setModalVisible(true)}>
-          <Image source={{ uri: walletLogo }} style={styles.tokenLogo} />
+          <Image source={accountIcon} style={styles.walletLogo} />
+          <Image source={walletLogo} style={styles.walletLogo} />
           <View style={styles.walletNameWrapper}>
             <Text style={styles.walletName}>{walletName}</Text>
             <Text style={styles.walletNameInput}>{walletNameInput}</Text>
@@ -434,205 +442,3 @@ export default function App() {
     </NavigationContainer>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#131A2A',
-    padding: 20,
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  walletNameContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  walletNameWrapper: {
-    flexDirection: 'column',
-    justifyContent: 'center',
-  },
-  walletLogo: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    marginRight: 10,
-  },
-  walletName: {
-    color: '#FFFFFF',
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginRight: 5,
-  },
-  walletNameInput: {
-    color: '#A6B0C3',
-    fontSize: 14,
-    marginRight: 5,
-  },
-  headerIcons: {
-    flexDirection: 'row',
-  },
-  headerIcon: {
-    marginLeft: 15,
-  },
-  balanceContainer: {
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  balance: {
-    color: '#FFFFFF',
-    fontSize: 36,
-    fontWeight: 'bold',
-  },
-  balanceChange: {
-    fontSize: 16,
-    marginTop: 5,
-  },
-  buttonContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 20,
-  },
-  button: {
-    alignItems: 'center',
-    backgroundColor: '#242E42',
-    padding: 10,
-    borderRadius: 10,
-    flex: 1,
-    marginHorizontal: 5,
-  },
-  buttonText: {
-    color: '#FFFFFF',
-    fontSize: 14,
-    marginTop: 5,
-  },
-  tokenCountContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  tokenCountLabel: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    marginRight: 10,
-  },
-  tokenCountInput: {
-    backgroundColor: '#242E42',
-    color: '#FFFFFF',
-    borderRadius: 5,
-    padding: 5,
-    width: 50,
-    textAlign: 'center',
-  },
-  tokenContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#242E42',
-    padding: 10,
-    borderRadius: 10,
-    marginBottom: 10,
-  },
-  tokenLogoContainer: {
-    position: 'relative',
-    marginRight: 10,
-  },
-  tokenLogo: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-  },
-  sIcon: {
-    position: 'absolute',
-    bottom: -2,
-    right: -2,
-    backgroundColor: '#FFFFFF',
-    color: '#000000',
-    fontSize: 12,
-    fontWeight: 'bold',
-    borderRadius: 10,
-    padding: 2,
-    borderWidth: 1,
-    borderColor: '#131A2A',
-  },
-  tokenInfo: {
-    flex: 1,
-  },
-  tokenName: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  tokenBalance: {
-    color: '#A6B0C3',
-    fontSize: 14,
-  },
-  tokenValue: {
-    alignItems: 'flex-end',
-  },
-  tokenPrice: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  tokenChange: {
-    fontSize: 14,
-  },
-  tokenList: {
-    flex: 1,
-  },
-  modalContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0,0,0,0.5)',
-  },
-  modalContent: {
-    backgroundColor: '#242E42',
-    padding: 20,
-    borderRadius: 10,
-    width: '80%',
-  },
-  modalTitle: {
-    color: '#FFFFFF',
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 10,
-  },
-  input: {
-    backgroundColor: '#242E42',
-    color: '#FFFFFF',
-    borderRadius: 5,
-    padding: 10,
-    marginBottom: 10,
-  },
-  modalButtons: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  modalButton: {
-    padding: 10,
-  },
-  modalButtonText: {
-    color: '#007AFF',
-    fontSize: 16,
-  },
-  title: {
-    color: '#FFFFFF',
-    fontSize: 24,
-    fontWeight: 'bold',
-    textAlign: 'center',
-  },
-  loadingContainer: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0,0,0,0.3)',
-  },
-});
