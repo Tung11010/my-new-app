@@ -11,6 +11,7 @@ import solanaLogo from './assets/images/solana.png';
 import usdcLogo from './assets/images/usdc.png';
 import serumLogo from './assets/images/serum.png';
 import accountIcon from './assets/images/accountIcon.png';
+import sIcon from './assets/images/sIcon.png'; // Import hình ảnh mới
 
 // Định nghĩa kiểu dữ liệu cho token
 interface Token {
@@ -187,7 +188,7 @@ const HomeScreen: React.FC = () => {
     setWalletNameInput(newWalletNameInput);
     setWalletLogo(newWalletLogo);
     setSolBalance(newSolBalance);
-    saveUserData('walletName', newWalletName); // Sửa từ save wikipediaData thành saveUserData
+    saveUserData('walletName', newWalletName);
     saveUserData('walletNameInput', newWalletNameInput);
     saveUserData('walletLogo', newWalletLogo);
     saveUserData('solBalance', newSolBalance.toString());
@@ -205,7 +206,7 @@ const HomeScreen: React.FC = () => {
       <View style={styles.tokenContainer}>
         <View style={styles.tokenLogoContainer}>
           <Image source={sol.logo} style={styles.tokenLogo} />
-          <Text style={styles.sIcon}>S</Text>
+          <Image source={sIcon} style={styles.sIcon} /> {/* Thay Text bằng Image */}
         </View>
         <View style={styles.tokenInfo}>
           <Text style={styles.tokenName}>{sol.name}</Text>
@@ -232,7 +233,7 @@ const HomeScreen: React.FC = () => {
       <View style={styles.tokenContainer}>
         <View style={styles.tokenLogoContainer}>
           <Image source={item.logo} style={styles.tokenLogo} />
-          <Text style={styles.sIcon}>S</Text>
+          <Image source={sIcon} style={styles.sIcon} /> {/* Thay Text bằng Image */}
         </View>
         <View style={styles.tokenInfo}>
           <Text style={styles.tokenName}>{item.name}</Text>
