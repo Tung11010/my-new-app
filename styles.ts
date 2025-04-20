@@ -24,18 +24,18 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    marginRight: 3, // Giảm từ 5 xuống 3 để các hình ảnh gần nhau hơn
+    marginRight: 3,
   },
   walletName: {
     color: '#FFFFFF',
     fontSize: 18,
     fontWeight: 'bold',
-    marginRight: 1, // Giảm từ 2 xuống 1
+    marginRight: 1,
   },
   walletNameInput: {
     color: '#A6B0C3',
     fontSize: 14,
-    marginRight: 1, // Giảm từ 2 xuống 1
+    marginRight: 1,
   },
   headerIcons: {
     flexDirection: 'row',
@@ -114,13 +114,12 @@ const styles = StyleSheet.create({
     bottom: -2,
     right: -2,
     backgroundColor: '#FFFFFF',
-    color: '#000000',
-    fontSize: 12,
-    fontWeight: 'bold',
     borderRadius: 10,
-    padding: 2,
     borderWidth: 1,
     borderColor: '#131A2A',
+    width: 16, // Kích thước phù hợp để thay thế chữ S
+    height: 16,
+    resizeMode: 'contain', // Đảm bảo hình ảnh không bị méo
   },
   tokenInfo: {
     flex: 1,
