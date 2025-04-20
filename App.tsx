@@ -11,7 +11,7 @@ import solanaLogo from './assets/images/solana.png';
 import usdcLogo from './assets/images/usdc.png';
 import serumLogo from './assets/images/serum.png';
 import accountIcon from './assets/images/accountIcon.png';
-import sIcon from './assets/images/sIcon.png'; // Import hình ảnh mới
+import sIcon from './assets/images/sIcon.png';
 
 // Định nghĩa kiểu dữ liệu cho token
 interface Token {
@@ -206,7 +206,7 @@ const HomeScreen: React.FC = () => {
       <View style={styles.tokenContainer}>
         <View style={styles.tokenLogoContainer}>
           <Image source={sol.logo} style={styles.tokenLogo} />
-          <Image source={sIcon} style={styles.sIcon} /> {/* Thay Text bằng Image */}
+          <Image source={sIcon} style={styles.sIcon} />
         </View>
         <View style={styles.tokenInfo}>
           <Text style={styles.tokenName}>{sol.name}</Text>
@@ -218,7 +218,7 @@ const HomeScreen: React.FC = () => {
           <Text style={styles.tokenPrice}>${sol.value.toFixed(2)}</Text>
           {sol.change !== 0 && (
             <Text style={[styles.tokenChange, { color: changeColor }]}>
-              {sol.change >= 0 ? '+' : ''}${sol.change.toFixed(2)} ({sol.changePercent.toFixed(2)}%)
+              {sol.change >= 0 ? '+' : ''}${sol.change.toFixed(2)} {/* Bỏ phần hiển thị phần trăm */}
             </Text>
           )}
         </View>
@@ -233,7 +233,7 @@ const HomeScreen: React.FC = () => {
       <View style={styles.tokenContainer}>
         <View style={styles.tokenLogoContainer}>
           <Image source={item.logo} style={styles.tokenLogo} />
-          <Image source={sIcon} style={styles.sIcon} /> {/* Thay Text bằng Image */}
+          <Image source={sIcon} style={styles.sIcon} />
         </View>
         <View style={styles.tokenInfo}>
           <Text style={styles.tokenName}>{item.name}</Text>
@@ -245,7 +245,7 @@ const HomeScreen: React.FC = () => {
           <Text style={styles.tokenPrice}>${item.value.toFixed(2)}</Text>
           {item.change !== 0 && (
             <Text style={[styles.tokenChange, { color: changeColor }]}>
-              {item.change >= 0 ? '+' : ''}${item.change.toFixed(2)} ({item.changePercent.toFixed(2)}%)
+              {item.change >= 0 ? '+' : ''}${item.change.toFixed(2)} {/* Bỏ phần hiển thị phần trăm */}
             </Text>
           )}
         </View>
