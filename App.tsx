@@ -4,7 +4,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import * as ImagePicker from 'expo-image-picker'; // Import expo-image-picker
+import * as ImagePicker from 'expo-image-picker';
 import styles from './styles';
 
 // Import hình ảnh từ thư mục assets/images
@@ -24,7 +24,7 @@ interface Token {
   value: number;
   change: number;
   changePercent: number;
-  logo: any; // Logo có thể là URI (string) hoặc tham chiếu ảnh
+  logo: any;
 }
 
 // Danh sách logo mẫu
@@ -80,7 +80,7 @@ const HomeScreen: React.FC = () => {
   const [modalVisible, setModalVisible] = useState<boolean>(false);
   const [tempWalletName, setTempWalletName] = useState<string>('');
   const [tempWalletNameInput, setTempWalletNameInput] = useState<string>('');
-  const [tempWalletLogo, setTempWalletLogo] = useState<string>('');
+  const [tempWalletLogoUri, setTempWalletLogoUri] = useState<string>('');
   const [tempSolBalance, setTempSolBalance] = useState<string>('0.5');
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
@@ -88,7 +88,7 @@ const HomeScreen: React.FC = () => {
   const [editTokenModalVisible, setEditTokenModalVisible] = useState<boolean>(false);
   const [editingToken, setEditingToken] = useState<Token | null>(null);
   const [tempTokenName, setTempTokenName] = useState<string>('');
-  const [tempTokenLogoUri, setTempTokenLogoUri] = useState<string>(''); // Lưu URI của ảnh đã chọn
+  const [tempTokenLogoUri, setTempTokenLogoUri] = useState<string>('');
 
   // Yêu cầu quyền truy cập thư viện ảnh
   useEffect(() => {
@@ -107,7 +107,7 @@ const HomeScreen: React.FC = () => {
         setIsLoading(true);
         const savedWalletName = await AsyncStorage.getItem('walletName');
         const savedWalletNameInput = await AsyncStorage.getItem('walletNameInput');
-        const savedWalletLogo = await AsyncStorage.getItem('walletLogo');
+        const savedWalletLogoUri = await AsyncStorage.getItem('walletLogoUri');
         const savedSolBalance = await AsyncStorage.getItem('solBalance');
         const savedTokenCount = await AsyncStorage.getItem('tokenDisplayCount');
         const savedSol = await AsyncStorage.getItem('sol');
@@ -115,7 +115,7 @@ const HomeScreen: React.FC = () => {
 
         if (savedWalletName) setWalletName(savedWalletName);
         if (savedWalletNameInput) setWalletNameInput(savedWalletNameInput);
-        if (savedWalletLogo) setWalletLogo(savedWalletLogo);
+        if (savedWalletLogoUri) setWalletLogo({ uri: savedWalletLogoUri });
         if (savedSolBalance) {
           setSolBalance(parseFloat(savedSolBalance) || 0.5);
           setTempSolBalance(savedSolBalance);
@@ -172,7 +172,7 @@ const HomeScreen: React.FC = () => {
     };
 
     updateMarketPrices();
-    const interval = setInterval(updateMarketPrices, 5000); // Cập nhật mỗi 5 giây
+    const interval = setInterval(updateMarketPrices, 5000);
     return () => clearInterval(interval);
   }, [solBalance]);
 
@@ -208,11 +208,25 @@ const HomeScreen: React.FC = () => {
     saveUserData('tokenDisplayCount', count.toString());
   };
 
+  // Xử lý chọn ảnh cho logo ví
+  const pickWalletImage = async () => {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 1,
+    });
+
+    if (!result.canceled) {
+      setTempWalletLogoUri(result.assets[0].uri);
+    }
+  };
+
   // Xử lý lưu thông tin ví
   const handleSaveWalletInfo = () => {
     const newWalletName = tempWalletName || `@user${Math.floor(Math.random() * 1000)}`;
     const newWalletNameInput = tempWalletNameInput || `Tài khoản ${Math.floor(Math.random() * 100)}`;
-    const newWalletLogo = tempWalletLogo || sampleLogos[Math.floor(Math.random() * sampleLogos.length)];
+    const newWalletLogo = tempWalletLogoUri ? { uri: tempWalletLogoUri } : walletLogo;
     const newSolBalance = parseFloat(tempSolBalance) || 0.5;
 
     if (newSolBalance < 0) {
@@ -226,12 +240,12 @@ const HomeScreen: React.FC = () => {
     setSolBalance(newSolBalance);
     saveUserData('walletName', newWalletName);
     saveUserData('walletNameInput', newWalletNameInput);
-    saveUserData('walletLogo', newWalletLogo);
+    saveUserData('walletLogoUri', tempWalletLogoUri || (walletLogo.uri || ''));
     saveUserData('solBalance', newSolBalance.toString());
     setModalVisible(false);
     setTempWalletName('');
     setTempWalletNameInput('');
-    setTempWalletLogo('');
+    setTempWalletLogoUri('');
     setTempSolBalance(newSolBalance.toString());
   };
 
@@ -243,12 +257,12 @@ const HomeScreen: React.FC = () => {
     setEditTokenModalVisible(true);
   };
 
-  // Xử lý chọn ảnh từ thư viện
-  const pickImage = async () => {
+  // Xử lý chọn ảnh từ thư viện cho token
+  const pickTokenImage = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
-      aspect: [1, 1], // Tỷ lệ khung cắt ảnh (vuông)
+      aspect: [1, 1],
       quality: 1,
     });
 
@@ -265,12 +279,10 @@ const HomeScreen: React.FC = () => {
     const newTokenLogo = tempTokenLogoUri ? { uri: tempTokenLogoUri } : editingToken.logo;
 
     if (editingToken.id === 'sol') {
-      // Cập nhật Solana
       const updatedSol = { ...sol, name: newTokenName, logo: newTokenLogo, logoUri: tempTokenLogoUri || sol.logo.uri };
       setSol(updatedSol);
       await saveUserData('sol', JSON.stringify(updatedSol));
     } else {
-      // Cập nhật token trong danh sách
       const updatedTokens = tokens.map((token) =>
         token.id === editingToken.id
           ? { ...token, name: newTokenName, logo: newTokenLogo, logoUri: tempTokenLogoUri || token.logo.uri }
@@ -290,11 +302,11 @@ const HomeScreen: React.FC = () => {
   const renderSol = useCallback(() => {
     const changeColor = sol.changePercent >= 0 ? '#34C759' : '#FF3B30';
     return (
-      <TouchableOpacity style={styles.tokenContainer} onPress={() => handleEditToken(sol)}>
-        <View style={styles.tokenLogoContainer}>
+      <View style={styles.tokenContainer}>
+        <TouchableOpacity style={styles.tokenLogoContainer} onPress={() => handleEditToken(sol)}>
           <Image source={sol.logo} style={styles.tokenLogo} />
           <Image source={sIcon} style={styles.sIcon} />
-        </View>
+        </TouchableOpacity>
         <View style={styles.tokenInfo}>
           <Text style={styles.tokenName}>{sol.name}</Text>
           <Text style={styles.tokenBalance}>
@@ -309,7 +321,7 @@ const HomeScreen: React.FC = () => {
             </Text>
           )}
         </View>
-      </TouchableOpacity>
+      </View>
     );
   }, [sol]);
 
@@ -317,11 +329,11 @@ const HomeScreen: React.FC = () => {
   const renderToken = useCallback(({ item }: { item: Token }) => {
     const changeColor = item.changePercent >= 0 ? '#34C759' : '#FF3B30';
     return (
-      <TouchableOpacity style={styles.tokenContainer} onPress={() => handleEditToken(item)}>
-        <View style={styles.tokenLogoContainer}>
+      <View style={styles.tokenContainer}>
+        <TouchableOpacity style={styles.tokenLogoContainer} onPress={() => handleEditToken(item)}>
           <Image source={item.logo} style={styles.tokenLogo} />
           <Image source={sIcon} style={styles.sIcon} />
-        </View>
+        </TouchableOpacity>
         <View style={styles.tokenInfo}>
           <Text style={styles.tokenName}>{item.name}</Text>
           <Text style={styles.tokenBalance}>
@@ -336,7 +348,7 @@ const HomeScreen: React.FC = () => {
             </Text>
           )}
         </View>
-      </TouchableOpacity>
+      </View>
     );
   }, []);
 
@@ -359,12 +371,14 @@ const HomeScreen: React.FC = () => {
               value={tempWalletNameInput}
               onChangeText={setTempWalletNameInput}
             />
-            <TextInput
-              style={styles.input}
-              placeholder="URL logo ví (để trống để chọn ngẫu nhiên)"
-              value={tempWalletLogo}
-              onChangeText={setTempWalletLogo}
-            />
+            <TouchableOpacity style={styles.uploadButton} onPress={pickWalletImage}>
+              <Text style={styles.uploadButtonText}>Chọn ảnh ví từ thư viện</Text>
+            </TouchableOpacity>
+            {tempWalletLogoUri ? (
+              <Image source={{ uri: tempWalletLogoUri }} style={styles.previewImage} />
+            ) : walletLogo ? (
+              <Image source={walletLogo} style={styles.previewImage} />
+            ) : null}
             <TextInput
               style={styles.input}
               placeholder="Số dư SOL"
@@ -395,7 +409,7 @@ const HomeScreen: React.FC = () => {
               value={tempTokenName}
               onChangeText={setTempTokenName}
             />
-            <TouchableOpacity style={styles.uploadButton} onPress={pickImage}>
+            <TouchableOpacity style={styles.uploadButton} onPress={pickTokenImage}>
               <Text style={styles.uploadButtonText}>Chọn ảnh từ thư viện</Text>
             </TouchableOpacity>
             {tempTokenLogoUri ? (
@@ -423,7 +437,6 @@ const HomeScreen: React.FC = () => {
 
       <View style={styles.header}>
         <TouchableOpacity style={styles.walletNameContainer} onPress={() => setModalVisible(true)}>
-          <Image source={accountIcon} style={styles.walletLogo} />
           <Image source={walletLogo} style={styles.walletLogo} />
           <View style={styles.walletNameWrapper}>
             <Text style={styles.walletName}>{walletName}</Text>
