@@ -4,6 +4,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import * as ImagePicker from 'expo-image-picker';
 import styles from './styles';
 
 // Import hình ảnh từ thư mục assets/images
@@ -11,7 +12,7 @@ import solanaLogo from './assets/images/solana.png';
 import usdcLogo from './assets/images/usdc.png';
 import serumLogo from './assets/images/serum.png';
 import accountIcon from './assets/images/accountIcon.png';
-import sIcon from './assets/images/sIcon.png'; // Import hình ảnh mới
+import sIcon from './assets/images/sIcon.png';
 
 // Định nghĩa kiểu dữ liệu cho token
 interface Token {
@@ -79,9 +80,25 @@ const HomeScreen: React.FC = () => {
   const [modalVisible, setModalVisible] = useState<boolean>(false);
   const [tempWalletName, setTempWalletName] = useState<string>('');
   const [tempWalletNameInput, setTempWalletNameInput] = useState<string>('');
-  const [tempWalletLogo, setTempWalletLogo] = useState<string>('');
+  const [tempWalletLogoUri, setTempWalletLogoUri] = useState<string>('');
   const [tempSolBalance, setTempSolBalance] = useState<string>('0.5');
   const [isLoading, setIsLoading] = useState<boolean>(false);
+
+  // State cho modal chỉnh sửa token
+  const [editTokenModalVisible, setEditTokenModalVisible] = useState<boolean>(false);
+  const [editingToken, setEditingToken] = useState<Token | null>(null);
+  const [tempTokenName, setTempTokenName] = useState<string>('');
+  const [tempTokenLogoUri, setTempTokenLogoUri] = useState<string>('');
+
+  // Yêu cầu quyền truy cập thư viện ảnh
+  useEffect(() => {
+    (async () => {
+      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert('Lỗi', 'Cần cấp quyền truy cập thư viện ảnh để chọn ảnh.');
+      }
+    })();
+  }, []);
 
   // Tải dữ liệu từ AsyncStorage
   useEffect(() => {
@@ -90,17 +107,36 @@ const HomeScreen: React.FC = () => {
         setIsLoading(true);
         const savedWalletName = await AsyncStorage.getItem('walletName');
         const savedWalletNameInput = await AsyncStorage.getItem('walletNameInput');
-        const savedWalletLogo = await AsyncStorage.getItem('walletLogo');
+        const savedWalletLogoUri = await AsyncStorage.getItem('walletLogoUri');
         const savedSolBalance = await AsyncStorage.getItem('solBalance');
         const savedTokenCount = await AsyncStorage.getItem('tokenDisplayCount');
+        const savedSol = await AsyncStorage.getItem('sol');
+        const savedTokens = await AsyncStorage.getItem('tokens');
+
         if (savedWalletName) setWalletName(savedWalletName);
         if (savedWalletNameInput) setWalletNameInput(savedWalletNameInput);
-        if (savedWalletLogo) setWalletLogo(savedWalletLogo);
+        if (savedWalletLogoUri) setWalletLogo({ uri: savedWalletLogoUri });
         if (savedSolBalance) {
           setSolBalance(parseFloat(savedSolBalance) || 0.5);
           setTempSolBalance(savedSolBalance);
         }
         if (savedTokenCount) setTokenDisplayCount(parseInt(savedTokenCount) || 10);
+        if (savedSol) {
+          const parsedSol = JSON.parse(savedSol);
+          setSol({
+            ...parsedSol,
+            logo: parsedSol.logoUri ? { uri: parsedSol.logoUri } : solanaLogo,
+          });
+        }
+        if (savedTokens) {
+          const parsedTokens = JSON.parse(savedTokens);
+          setTokens(
+            parsedTokens.map((token: Token & { logoUri?: string }) => ({
+              ...token,
+              logo: token.logoUri ? { uri: token.logoUri } : accountIcon,
+            }))
+          );
+        }
       } catch (error) {
         console.error('Error loading user data:', error);
         Alert.alert('Lỗi', 'Không thể tải dữ liệu ví');
@@ -136,7 +172,7 @@ const HomeScreen: React.FC = () => {
     };
 
     updateMarketPrices();
-    const interval = setInterval(updateMarketPrices, 5000); // Cập nhật mỗi 5 giây
+    const interval = setInterval(updateMarketPrices, 5000);
     return () => clearInterval(interval);
   }, [solBalance]);
 
@@ -172,11 +208,25 @@ const HomeScreen: React.FC = () => {
     saveUserData('tokenDisplayCount', count.toString());
   };
 
+  // Xử lý chọn ảnh cho logo ví
+  const pickWalletImage = async () => {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 1,
+    });
+
+    if (!result.canceled) {
+      setTempWalletLogoUri(result.assets[0].uri);
+    }
+  };
+
   // Xử lý lưu thông tin ví
   const handleSaveWalletInfo = () => {
     const newWalletName = tempWalletName || `@user${Math.floor(Math.random() * 1000)}`;
     const newWalletNameInput = tempWalletNameInput || `Tài khoản ${Math.floor(Math.random() * 100)}`;
-    const newWalletLogo = tempWalletLogo || sampleLogos[Math.floor(Math.random() * sampleLogos.length)];
+    const newWalletLogo = tempWalletLogoUri ? { uri: tempWalletLogoUri } : walletLogo;
     const newSolBalance = parseFloat(tempSolBalance) || 0.5;
 
     if (newSolBalance < 0) {
@@ -190,13 +240,62 @@ const HomeScreen: React.FC = () => {
     setSolBalance(newSolBalance);
     saveUserData('walletName', newWalletName);
     saveUserData('walletNameInput', newWalletNameInput);
-    saveUserData('walletLogo', newWalletLogo);
+    saveUserData('walletLogoUri', tempWalletLogoUri || (walletLogo.uri || ''));
     saveUserData('solBalance', newSolBalance.toString());
     setModalVisible(false);
     setTempWalletName('');
     setTempWalletNameInput('');
-    setTempWalletLogo('');
+    setTempWalletLogoUri('');
     setTempSolBalance(newSolBalance.toString());
+  };
+
+  // Xử lý mở modal chỉnh sửa token
+  const handleEditToken = (token: Token) => {
+    setEditingToken(token);
+    setTempTokenName(token.name);
+    setTempTokenLogoUri('');
+    setEditTokenModalVisible(true);
+  };
+
+  // Xử lý chọn ảnh từ thư viện cho token
+  const pickTokenImage = async () => {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 1,
+    });
+
+    if (!result.canceled) {
+      setTempTokenLogoUri(result.assets[0].uri);
+    }
+  };
+
+  // Xử lý lưu thông tin token đã chỉnh sửa
+  const handleSaveTokenInfo = async () => {
+    if (!editingToken) return;
+
+    const newTokenName = tempTokenName || editingToken.name;
+    const newTokenLogo = tempTokenLogoUri ? { uri: tempTokenLogoUri } : editingToken.logo;
+
+    if (editingToken.id === 'sol') {
+      const updatedSol = { ...sol, name: newTokenName, logo: newTokenLogo, logoUri: tempTokenLogoUri || sol.logo.uri };
+      setSol(updatedSol);
+      await saveUserData('sol', JSON.stringify(updatedSol));
+    } else {
+      const updatedTokens = tokens.map((token) =>
+        token.id === editingToken.id
+          ? { ...token, name: newTokenName, logo: newTokenLogo, logoUri: tempTokenLogoUri || token.logo.uri }
+          : token
+      );
+      setTokens(updatedTokens);
+      await saveUserData('tokens', JSON.stringify(updatedTokens));
+    }
+
+    setEditTokenModalVisible(false);
+    setEditingToken(null);
+    setTempTokenName('');
+    setTempTokenLogoUri('');
   };
 
   // Render Solana
@@ -204,10 +303,10 @@ const HomeScreen: React.FC = () => {
     const changeColor = sol.changePercent >= 0 ? '#34C759' : '#FF3B30';
     return (
       <View style={styles.tokenContainer}>
-        <View style={styles.tokenLogoContainer}>
+        <TouchableOpacity style={styles.tokenLogoContainer} onPress={() => handleEditToken(sol)}>
           <Image source={sol.logo} style={styles.tokenLogo} />
-          <Image source={sIcon} style={styles.sIcon} /> {/* Thay Text bằng Image */}
-        </View>
+          <Image source={sIcon} style={styles.sIcon} />
+        </TouchableOpacity>
         <View style={styles.tokenInfo}>
           <Text style={styles.tokenName}>{sol.name}</Text>
           <Text style={styles.tokenBalance}>
@@ -218,7 +317,7 @@ const HomeScreen: React.FC = () => {
           <Text style={styles.tokenPrice}>${sol.value.toFixed(2)}</Text>
           {sol.change !== 0 && (
             <Text style={[styles.tokenChange, { color: changeColor }]}>
-              {sol.change >= 0 ? '+' : ''}${sol.change.toFixed(2)} ({sol.changePercent.toFixed(2)}%)
+              {sol.change >= 0 ? '+' : ''}${sol.change.toFixed(2)}
             </Text>
           )}
         </View>
@@ -231,10 +330,10 @@ const HomeScreen: React.FC = () => {
     const changeColor = item.changePercent >= 0 ? '#34C759' : '#FF3B30';
     return (
       <View style={styles.tokenContainer}>
-        <View style={styles.tokenLogoContainer}>
+        <TouchableOpacity style={styles.tokenLogoContainer} onPress={() => handleEditToken(item)}>
           <Image source={item.logo} style={styles.tokenLogo} />
-          <Image source={sIcon} style={styles.sIcon} /> {/* Thay Text bằng Image */}
-        </View>
+          <Image source={sIcon} style={styles.sIcon} />
+        </TouchableOpacity>
         <View style={styles.tokenInfo}>
           <Text style={styles.tokenName}>{item.name}</Text>
           <Text style={styles.tokenBalance}>
@@ -245,7 +344,7 @@ const HomeScreen: React.FC = () => {
           <Text style={styles.tokenPrice}>${item.value.toFixed(2)}</Text>
           {item.change !== 0 && (
             <Text style={[styles.tokenChange, { color: changeColor }]}>
-              {item.change >= 0 ? '+' : ''}${item.change.toFixed(2)} ({item.changePercent.toFixed(2)}%)
+              {item.change >= 0 ? '+' : ''}${item.change.toFixed(2)}
             </Text>
           )}
         </View>
@@ -255,6 +354,7 @@ const HomeScreen: React.FC = () => {
 
   return (
     <View style={styles.container}>
+      {/* Modal chỉnh sửa ví */}
       <Modal visible={modalVisible} transparent animationType="slide">
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
@@ -271,12 +371,14 @@ const HomeScreen: React.FC = () => {
               value={tempWalletNameInput}
               onChangeText={setTempWalletNameInput}
             />
-            <TextInput
-              style={styles.input}
-              placeholder="URL logo ví (để trống để chọn ngẫu nhiên)"
-              value={tempWalletLogo}
-              onChangeText={setTempWalletLogo}
-            />
+            <TouchableOpacity style={styles.uploadButton} onPress={pickWalletImage}>
+              <Text style={styles.uploadButtonText}>Chọn ảnh ví từ thư viện</Text>
+            </TouchableOpacity>
+            {tempWalletLogoUri ? (
+              <Image source={{ uri: tempWalletLogoUri }} style={styles.previewImage} />
+            ) : walletLogo ? (
+              <Image source={walletLogo} style={styles.previewImage} />
+            ) : null}
             <TextInput
               style={styles.input}
               placeholder="Số dư SOL"
@@ -296,6 +398,37 @@ const HomeScreen: React.FC = () => {
         </View>
       </Modal>
 
+      {/* Modal chỉnh sửa token */}
+      <Modal visible={editTokenModalVisible} transparent animationType="slide">
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Chỉnh sửa thông tin token</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Tên token"
+              value={tempTokenName}
+              onChangeText={setTempTokenName}
+            />
+            <TouchableOpacity style={styles.uploadButton} onPress={pickTokenImage}>
+              <Text style={styles.uploadButtonText}>Chọn ảnh từ thư viện</Text>
+            </TouchableOpacity>
+            {tempTokenLogoUri ? (
+              <Image source={{ uri: tempTokenLogoUri }} style={styles.previewImage} />
+            ) : editingToken?.logo ? (
+              <Image source={editingToken.logo} style={styles.previewImage} />
+            ) : null}
+            <View style={styles.modalButtons}>
+              <TouchableOpacity style={styles.modalButton} onPress={() => setEditTokenModalVisible(false)}>
+                <Text style={styles.modalButtonText}>Hủy</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.modalButton} onPress={handleSaveTokenInfo}>
+                <Text style={styles.modalButtonText}>Lưu</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
       {isLoading && (
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#007AFF" />
@@ -304,7 +437,6 @@ const HomeScreen: React.FC = () => {
 
       <View style={styles.header}>
         <TouchableOpacity style={styles.walletNameContainer} onPress={() => setModalVisible(true)}>
-          <Image source={accountIcon} style={styles.walletLogo} />
           <Image source={walletLogo} style={styles.walletLogo} />
           <View style={styles.walletNameWrapper}>
             <Text style={styles.walletName}>{walletName}</Text>
