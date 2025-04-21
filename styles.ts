@@ -4,7 +4,10 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#131A2A',
-    padding: 20,
+  },
+  scrollContainer: {
+    flex: 1,
+    paddingTop: 60,
   },
   header: {
     flexDirection: 'row',
@@ -229,24 +232,35 @@ const styles = StyleSheet.create({
 
   // Styles cho TokenDetailScreen
   detailHeader: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 15,
+    justifyContent: 'center',
+    paddingHorizontal: 15,
+    paddingVertical: 10,
     backgroundColor: '#131A2A',
+    zIndex: 10,
+  },
+  backButton: {
+    position: 'absolute',
+    left: 15,
   },
   detailTitle: {
     color: '#FFFFFF',
     fontSize: 20,
     fontWeight: 'bold',
-    marginLeft: 15,
   },
   priceContainer: {
     alignItems: 'center',
-    padding: 20,
+    paddingVertical: 20,
+    paddingHorizontal: 15,
   },
   price: {
     color: '#FFFFFF',
-    fontSize: 36,
+    fontSize: 40, // Tăng kích thước font
     fontWeight: 'bold',
   },
   priceChange: {
@@ -254,15 +268,14 @@ const styles = StyleSheet.create({
     marginTop: 5,
   },
   chart: {
-    marginVertical: 10,
-    marginHorizontal: 20,
-    borderRadius: 16,
+    marginVertical: 8,
+    marginHorizontal: 15,
   },
   timeTabs: {
     flexDirection: 'row',
     justifyContent: 'space-around',
     paddingVertical: 10,
-    paddingHorizontal: 20,
+    paddingHorizontal: 15,
   },
   timeTab: {
     paddingVertical: 8,
@@ -277,8 +290,23 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 14,
   },
+  actionButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    paddingVertical: 15,
+    paddingHorizontal: 15,
+  },
+  actionButton: {
+    alignItems: 'center',
+  },
+  actionButtonText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    marginTop: 5,
+  },
   balanceSection: {
-    padding: 20,
+    paddingHorizontal: 15,
+    paddingVertical: 10,
   },
   sectionTitle: {
     color: '#FFFFFF',
@@ -291,7 +319,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#242E42',
     borderRadius: 10,
-    padding: 10,
+    padding: 15,
   },
   balanceInfo: {
     flex: 1,
@@ -311,25 +339,101 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
   },
-  actionButtons: {
+  stakingSection: {
+    backgroundColor: '#242E42',
+    borderRadius: 12,
+    marginHorizontal: 15,
+    marginVertical: 8,
+    padding: 15,
+  },
+  stakingHeader: {
     flexDirection: 'row',
-    justifyContent: 'space-around',
-    padding: 20,
-  },
-  actionButton: {
     alignItems: 'center',
+    marginBottom: 8,
   },
-  actionButtonText: {
+  stakingTitle: {
     color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginLeft: 8,
+  },
+  stakingDescription: {
+    color: '#A6B0C3',
+    fontSize: 14,
+  },
+  introductionSection: {
+    paddingHorizontal: 15,
+    paddingVertical: 10,
+  },
+  introductionText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    lineHeight: 20,
+  },
+  showMoreText: {
+    color: '#A855F7',
     fontSize: 14,
     marginTop: 5,
   },
+  linksSection: {
+    flexDirection: 'row',
+    justifyContent: 'flex-start',
+    paddingHorizontal: 15,
+    paddingVertical: 10,
+    gap: 10,
+  },
+  linkButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#242E42',
+    paddingVertical: 8,
+    paddingHorizontal: 15,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#3A465A',
+  },
+  linkText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    marginLeft: 5,
+  },
+  infoSection: {
+    backgroundColor: '#242E42',
+    borderRadius: 12,
+    marginHorizontal: 15,
+    marginVertical: 8,
+    padding: 15,
+  },
+  infoRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginVertical: 5,
+  },
+  infoLabel: {
+    color: '#A6B0C3',
+    fontSize: 14,
+  },
+  infoValue: {
+    color: '#FFFFFF',
+    fontSize: 14,
+  },
+  performanceSection: {
+    backgroundColor: '#242E42',
+    borderRadius: 12,
+    marginHorizontal: 15,
+    marginVertical: 8,
+    padding: 15,
+  },
+  changePercent: {
+    fontSize: 14,
+  },
   buyButton: {
     backgroundColor: '#A855F7',
-    marginHorizontal: 20,
-    marginVertical: 20,
+    opacity: 0.9,
+    marginHorizontal: 15,
+    marginVertical: 15,
     paddingVertical: 15,
-    borderRadius: 10,
+    borderRadius: 12,
     alignItems: 'center',
   },
   buyButtonText: {
