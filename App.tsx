@@ -15,6 +15,10 @@ import usdcLogo from './assets/images/usdc.png';
 import serumLogo from './assets/images/serum.png';
 import accountIcon from './assets/images/accountIcon.png';
 import sIcon from './assets/images/sIcon.png';
+import receiveIcon from './assets/images/receiveIcon.png'; // Import hình ảnh cho Receive
+import sendIcon from './assets/images/sendIcon.png'; // Import hình ảnh cho Send
+import swapIcon from './assets/images/swapIcon.png'; // Import hình ảnh cho Swap
+import buyIcon from './assets/images/buyIcon.png'; // Import hình ảnh cho Buy 
 
 // Định nghĩa kiểu dữ liệu cho token
 interface Token {
@@ -480,19 +484,19 @@ const HomeScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
 
       <View style={styles.buttonContainer}>
         <TouchableOpacity style={styles.button}>
-          <Ionicons name="arrow-down-outline" size={24} color="#FFFFFF" />
+          <Image source={receiveIcon} style={{ width: 24, height: 24 }} />
           <Text style={styles.buttonText}>Receive</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.button}>
-          <Ionicons name="arrow-up-outline" size={24} color="#FFFFFF" />
+          <Image source={sendIcon} style={{ width: 24, height: 24 }} />
           <Text style={styles.buttonText}>Send</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.button}>
-          <Ionicons name="swap-horizontal-outline" size={24} color="#FFFFFF" />
+          <Image source={swapIcon} style={{ width: 24, height: 24 }} />
           <Text style={styles.buttonText}>Swap</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.button}>
-          <Ionicons name="card-outline" size={24} color="#FFFFFF" />
+          <Image source={buyIcon} style={{ width: 24, height: 24 }} />
           <Text style={styles.buttonText}>Buy</Text>
         </TouchableOpacity>
       </View>

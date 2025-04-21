@@ -8,7 +8,7 @@ const styles = StyleSheet.create({
   },
   scrollContainer: {
     flex: 1,
-    paddingTop: 60,
+    paddingTop: 100, // Tăng từ 80 lên 100 để đẩy header xuống dưới thêm
   },
   header: {
     flexDirection: 'row',
@@ -74,10 +74,15 @@ const styles = StyleSheet.create({
     flex: 1,
     marginHorizontal: 5,
   },
+  buttonIcon: {
+    width: 24,
+    height: 24,
+    marginBottom: 5,
+    resizeMode: 'contain',
+  },
   buttonText: {
     color: '#FFFFFF',
     fontSize: 14,
-    marginTop: 5,
   },
   tokenCountContainer: {
     flexDirection: 'row',
@@ -100,7 +105,7 @@ const styles = StyleSheet.create({
   tokenContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#1E2A2B', // Đổi thành màu xám từ hình ảnh
+    backgroundColor: '#1E2A2B',
     padding: 10,
     borderRadius: 10,
     marginBottom: 10,
@@ -244,7 +249,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingHorizontal: 10,
     paddingVertical: 10,
-    backgroundColor: '#rgb(84, 82, 82)',
+    backgroundColor: '#rgb(45, 43, 43)',
     zIndex: 10,
   },
   backButton: {
