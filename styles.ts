@@ -3,7 +3,8 @@ import { StyleSheet } from 'react-native';
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#131A2A',
+    backgroundColor: '#rgb(45, 43, 43)',
+    paddingHorizontal: 10,
   },
   scrollContainer: {
     flex: 1,
@@ -63,6 +64,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginBottom: 20,
+    marginHorizontal: 5,
   },
   button: {
     alignItems: 'center',
@@ -98,10 +100,11 @@ const styles = StyleSheet.create({
   tokenContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#242E42',
+    backgroundColor: '#1E2A2B', // Đổi thành màu xám từ hình ảnh
     padding: 10,
     borderRadius: 10,
     marginBottom: 10,
+    marginHorizontal: 5,
   },
   tokenLogoContainer: {
     position: 'relative',
@@ -119,7 +122,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: '#131A2A',
+    borderColor: '#rgb(45, 43, 43)',
     width: 16,
     height: 16,
     resizeMode: 'contain',
@@ -239,14 +242,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: 15,
+    paddingHorizontal: 10,
     paddingVertical: 10,
-    backgroundColor: '#131A2A',
+    backgroundColor: '#rgb(84, 82, 82)',
     zIndex: 10,
   },
   backButton: {
     position: 'absolute',
-    left: 15,
+    left: 10,
   },
   detailTitle: {
     color: '#FFFFFF',
@@ -256,11 +259,11 @@ const styles = StyleSheet.create({
   priceContainer: {
     alignItems: 'center',
     paddingVertical: 20,
-    paddingHorizontal: 15,
+    paddingHorizontal: 10,
   },
   price: {
     color: '#FFFFFF',
-    fontSize: 40, // Tăng kích thước font
+    fontSize: 40,
     fontWeight: 'bold',
   },
   priceChange: {
@@ -269,13 +272,13 @@ const styles = StyleSheet.create({
   },
   chart: {
     marginVertical: 8,
-    marginHorizontal: 15,
+    marginHorizontal: 10,
   },
   timeTabs: {
     flexDirection: 'row',
     justifyContent: 'space-around',
     paddingVertical: 10,
-    paddingHorizontal: 15,
+    paddingHorizontal: 10,
   },
   timeTab: {
     paddingVertical: 8,
@@ -294,7 +297,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-around',
     paddingVertical: 15,
-    paddingHorizontal: 15,
+    paddingHorizontal: 10,
   },
   actionButton: {
     alignItems: 'center',
@@ -305,7 +308,7 @@ const styles = StyleSheet.create({
     marginTop: 5,
   },
   balanceSection: {
-    paddingHorizontal: 15,
+    paddingHorizontal: 10,
     paddingVertical: 10,
   },
   sectionTitle: {
@@ -342,7 +345,7 @@ const styles = StyleSheet.create({
   stakingSection: {
     backgroundColor: '#242E42',
     borderRadius: 12,
-    marginHorizontal: 15,
+    marginHorizontal: 10,
     marginVertical: 8,
     padding: 15,
   },
@@ -362,7 +365,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   introductionSection: {
-    paddingHorizontal: 15,
+    paddingHorizontal: 10,
     paddingVertical: 10,
   },
   introductionText: {
@@ -378,7 +381,7 @@ const styles = StyleSheet.create({
   linksSection: {
     flexDirection: 'row',
     justifyContent: 'flex-start',
-    paddingHorizontal: 15,
+    paddingHorizontal: 10,
     paddingVertical: 10,
     gap: 10,
   },
@@ -400,7 +403,7 @@ const styles = StyleSheet.create({
   infoSection: {
     backgroundColor: '#242E42',
     borderRadius: 12,
-    marginHorizontal: 15,
+    marginHorizontal: 10,
     marginVertical: 8,
     padding: 15,
   },
@@ -420,7 +423,7 @@ const styles = StyleSheet.create({
   performanceSection: {
     backgroundColor: '#242E42',
     borderRadius: 12,
-    marginHorizontal: 15,
+    marginHorizontal: 10,
     marginVertical: 8,
     padding: 15,
   },
@@ -430,7 +433,7 @@ const styles = StyleSheet.create({
   buyButton: {
     backgroundColor: '#A855F7',
     opacity: 0.9,
-    marginHorizontal: 15,
+    marginHorizontal: 10,
     marginVertical: 15,
     paddingVertical: 15,
     borderRadius: 12,
