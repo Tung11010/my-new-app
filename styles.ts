@@ -220,6 +220,123 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: 'rgba(0,0,0,0.3)',
   },
+  tokenDetails: {
+    flex: 1,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+
+  // Styles cho TokenDetailScreen
+  detailHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 15,
+    backgroundColor: '#131A2A',
+  },
+  detailTitle: {
+    color: '#FFFFFF',
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginLeft: 15,
+  },
+  priceContainer: {
+    alignItems: 'center',
+    padding: 20,
+  },
+  price: {
+    color: '#FFFFFF',
+    fontSize: 36,
+    fontWeight: 'bold',
+  },
+  priceChange: {
+    fontSize: 16,
+    marginTop: 5,
+  },
+  chart: {
+    marginVertical: 10,
+    marginHorizontal: 20,
+    borderRadius: 16,
+  },
+  timeTabs: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+  },
+  timeTab: {
+    paddingVertical: 8,
+    paddingHorizontal: 15,
+    borderRadius: 20,
+    backgroundColor: '#242E42',
+  },
+  activeTimeTab: {
+    backgroundColor: '#007AFF',
+  },
+  timeTabText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+  },
+  balanceSection: {
+    padding: 20,
+  },
+  sectionTitle: {
+    color: '#FFFFFF',
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 10,
+  },
+  balanceRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#242E42',
+    borderRadius: 10,
+    padding: 10,
+  },
+  balanceInfo: {
+    flex: 1,
+    marginLeft: 10,
+  },
+  balanceName: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  balanceAmount: {
+    color: '#A6B0C3',
+    fontSize: 14,
+  },
+  balanceValue: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  actionButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    padding: 20,
+  },
+  actionButton: {
+    alignItems: 'center',
+  },
+  actionButtonText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    marginTop: 5,
+  },
+  buyButton: {
+    backgroundColor: '#A855F7',
+    marginHorizontal: 20,
+    marginVertical: 20,
+    paddingVertical: 15,
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  buyButtonText: {
+    color: '#FFFFFF',
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
 });
 
 export default styles;

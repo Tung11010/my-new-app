@@ -4,8 +4,10 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import * as ImagePicker from 'expo-image-picker';
 import styles from './styles';
+import TokenDetailScreen from './TokenDetailScreen';
 
 // Import hình ảnh từ thư mục assets/images
 import solanaLogo from './assets/images/solana.png';
@@ -66,7 +68,7 @@ const initialMockData = {
 };
 
 // Màn hình Home
-const HomeScreen: React.FC = () => {
+const HomeScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
   const [walletName, setWalletName] = useState<string>('@dynh');
   const [walletNameInput, setWalletNameInput] = useState<string>('Tài khoản 1');
   const [walletLogo, setWalletLogo] = useState<any>(accountIcon);
@@ -257,6 +259,11 @@ const HomeScreen: React.FC = () => {
     setEditTokenModalVisible(true);
   };
 
+  // Xử lý điều hướng đến màn hình chi tiết token
+  const handleNavigateToDetail = (token: Token) => {
+    navigation.navigate('TokenDetail', { token });
+  };
+
   // Xử lý chọn ảnh từ thư viện cho token
   const pickTokenImage = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -307,23 +314,28 @@ const HomeScreen: React.FC = () => {
           <Image source={sol.logo} style={styles.tokenLogo} />
           <Image source={sIcon} style={styles.sIcon} />
         </TouchableOpacity>
-        <View style={styles.tokenInfo}>
-          <Text style={styles.tokenName}>{sol.name}</Text>
-          <Text style={styles.tokenBalance}>
-            {sol.balance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} {sol.symbol}
-          </Text>
-        </View>
-        <View style={styles.tokenValue}>
-          <Text style={styles.tokenPrice}>${sol.value.toFixed(2)}</Text>
-          {sol.change !== 0 && (
-            <Text style={[styles.tokenChange, { color: changeColor }]}>
-              {sol.change >= 0 ? '+' : ''}${sol.change.toFixed(2)}
+        <TouchableOpacity
+          style={styles.tokenDetails}
+          onPress={() => handleNavigateToDetail(sol)}
+        >
+          <View style={styles.tokenInfo}>
+            <Text style={styles.tokenName}>{sol.name}</Text>
+            <Text style={styles.tokenBalance}>
+              {sol.balance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} {sol.symbol}
             </Text>
-          )}
-        </View>
+          </View>
+          <View style={styles.tokenValue}>
+            <Text style={styles.tokenPrice}>${sol.value.toFixed(2)}</Text>
+            {sol.change !== 0 && (
+              <Text style={[styles.tokenChange, { color: changeColor }]}>
+                {sol.change >= 0 ? '+' : ''}${sol.change.toFixed(2)}
+              </Text>
+            )}
+          </View>
+        </TouchableOpacity>
       </View>
     );
-  }, [sol]);
+  }, [sol, navigation]);
 
   // Render token
   const renderToken = useCallback(({ item }: { item: Token }) => {
@@ -334,23 +346,28 @@ const HomeScreen: React.FC = () => {
           <Image source={item.logo} style={styles.tokenLogo} />
           <Image source={sIcon} style={styles.sIcon} />
         </TouchableOpacity>
-        <View style={styles.tokenInfo}>
-          <Text style={styles.tokenName}>{item.name}</Text>
-          <Text style={styles.tokenBalance}>
-            {item.balance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} {item.symbol}
-          </Text>
-        </View>
-        <View style={styles.tokenValue}>
-          <Text style={styles.tokenPrice}>${item.value.toFixed(2)}</Text>
-          {item.change !== 0 && (
-            <Text style={[styles.tokenChange, { color: changeColor }]}>
-              {item.change >= 0 ? '+' : ''}${item.change.toFixed(2)}
+        <TouchableOpacity
+          style={styles.tokenDetails}
+          onPress={() => handleNavigateToDetail(item)}
+        >
+          <View style={styles.tokenInfo}>
+            <Text style={styles.tokenName}>{item.name}</Text>
+            <Text style={styles.tokenBalance}>
+              {item.balance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} {item.symbol}
             </Text>
-          )}
-        </View>
+          </View>
+          <View style={styles.tokenValue}>
+            <Text style={styles.tokenPrice}>${item.value.toFixed(2)}</Text>
+            {item.change !== 0 && (
+              <Text style={[styles.tokenChange, { color: changeColor }]}>
+                {item.change >= 0 ? '+' : ''}${item.change.toFixed(2)}
+              </Text>
+            )}
+          </View>
+        </TouchableOpacity>
       </View>
     );
-  }, []);
+  }, [navigation]);
 
   return (
     <View style={styles.container}>
@@ -527,6 +544,16 @@ const CompassScreen = () => (
   </View>
 );
 
+// Tạo Stack Navigator cho Home và TokenDetail
+const Stack = createNativeStackNavigator();
+
+const HomeStack = () => (
+  <Stack.Navigator screenOptions={{ headerShown: false }}>
+    <Stack.Screen name="HomeMain" component={HomeScreen} />
+    <Stack.Screen name="TokenDetail" component={TokenDetailScreen} />
+  </Stack.Navigator>
+);
+
 // Tạo Tab Navigator
 const Tab = createBottomTabNavigator();
 
@@ -566,7 +593,7 @@ export default function App() {
           headerShown: false,
         })}
       >
-        <Tab.Screen name="Home" component={HomeScreen} />
+        <Tab.Screen name="Home" component={HomeStack} />
         <Tab.Screen name="Apps" component={AppsScreen} />
         <Tab.Screen name="Reload" component={ReloadScreen} />
         <Tab.Screen name="Clock" component={ClockScreen} />
