@@ -117,9 +117,9 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     borderWidth: 1,
     borderColor: '#131A2A',
-    width: 16, // Kích thước phù hợp để thay thế chữ S
+    width: 16,
     height: 16,
-    resizeMode: 'contain', // Đảm bảo hình ảnh không bị méo
+    resizeMode: 'contain',
   },
   tokenInfo: {
     flex: 1,
@@ -171,10 +171,13 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     padding: 10,
     marginBottom: 10,
+    borderWidth: 1,
+    borderColor: '#A6B0C3',
   },
   modalButtons: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    marginTop: 10,
   },
   modalButton: {
     padding: 10,
@@ -182,6 +185,24 @@ const styles = StyleSheet.create({
   modalButtonText: {
     color: '#007AFF',
     fontSize: 16,
+  },
+  uploadButton: {
+    backgroundColor: '#007AFF',
+    padding: 10,
+    borderRadius: 5,
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  uploadButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+  },
+  previewImage: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    marginBottom: 10,
+    alignSelf: 'center',
   },
   title: {
     color: '#FFFFFF',
