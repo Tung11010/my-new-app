@@ -1,12 +1,11 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, Image, TextInput, FlatList, TouchableOpacity, Modal, Alert, Platform, ActivityIndicator, SafeAreaView, ScrollView, StyleSheet } from 'react-native';
+import { View, Text, Image, TextInput, FlatList, TouchableOpacity, Modal, Alert, Platform, ActivityIndicator, SafeAreaView, ScrollView } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import * as ImagePicker from 'expo-image-picker';
-import { BarCodeScanner } from 'expo-barcode-scanner'; // Thêm expo-barcode-scanner
 import styles from './styles';
 import TokenDetailScreen from './TokenDetailScreen';
 
@@ -20,7 +19,7 @@ import receiveIcon from './assets/images/receiveIcon.png';
 import sendIcon from './assets/images/sendIcon.png';
 import swapIcon from './assets/images/swapIcon.png';
 import buyIcon from './assets/images/buyIcon.png';
-import qrCodeIcon from './assets/images/qrCodeIcon.png'; // Thêm hình ảnh QR code mới
+import qrCodeIcon from './assets/images/qrCodeIcon.png'; // Giữ import hình ảnh QR code
 
 // Định nghĩa kiểu dữ liệu cho token
 interface Token {
@@ -98,23 +97,13 @@ const HomeScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
   const [tempTokenName, setTempTokenName] = useState<string>('');
   const [tempTokenLogoUri, setTempTokenLogoUri] = useState<string>('');
 
-  // State cho quét mã QR
-  const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
-  const [scanning, setScanning] = useState<boolean>(false);
-  const [scannedData, setScannedData] = useState<string | null>(null);
-
-  // Yêu cầu quyền truy cập thư viện ảnh và camera
+  // Yêu cầu quyền truy cập thư viện ảnh
   useEffect(() => {
     (async () => {
-      // Quyền truy cập thư viện ảnh
       const { status: imageStatus } = await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (imageStatus !== 'granted') {
         Alert.alert('Lỗi', 'Cần cấp quyền truy cập thư viện ảnh để chọn ảnh.');
       }
-
-      // Quyền truy cập camera
-      const { status: cameraStatus } = await BarCodeScanner.requestPermissionsAsync();
-      setHasCameraPermission(cameraStatus === 'granted');
     })();
   }, []);
 
@@ -321,29 +310,6 @@ const HomeScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
     setTempTokenLogoUri('');
   };
 
-  // Xử lý mở camera để quét mã QR
-  const handleOpenQrScanner = () => {
-    if (hasCameraPermission === null) {
-      Alert.alert('Lỗi', 'Đang kiểm tra quyền truy cập camera...');
-      return;
-    }
-    if (hasCameraPermission === false) {
-      Alert.alert('Lỗi', 'Không có quyền truy cập camera. Vui lòng cấp quyền trong cài đặt.');
-      return;
-    }
-    setScanning(true);
-    setScannedData(null);
-  };
-
-  // Xử lý khi quét mã QR thành công
-  const handleBarCodeScanned = ({ type, data }: { type: string; data: string }) => {
-    setScanning(false);
-    setScannedData(data);
-    Alert.alert('Mã QR đã quét', `Dữ liệu: ${data}\nLoại: ${type}`, [
-      { text: 'OK', onPress: () => setScannedData(null) },
-    ]);
-  };
-
   // Render Solana
   const renderSol = useCallback(() => {
     const changeColor = sol.changePercent >= 0 ? '#34C759' : '#FF3B30';
@@ -421,7 +387,7 @@ const HomeScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
           <Ionicons name="chevron-down" size={20} color="#FFFFFF" />
         </TouchableOpacity>
         <View style={styles.headerIcons}>
-          <TouchableOpacity onPress={handleOpenQrScanner}>
+          <TouchableOpacity>
             <Image source={qrCodeIcon} style={styles.headerIcon} />
           </TouchableOpacity>
           <TouchableOpacity>
@@ -429,27 +395,6 @@ const HomeScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
           </TouchableOpacity>
         </View>
       </View>
-
-      {/* Modal quét mã QR */}
-      {scanning && (
-        <Modal visible={scanning} transparent={false} animationType="slide">
-          <View style={styles.qrScannerContainer}>
-            <BarCodeScanner
-              onBarCodeScanned={scannedData ? undefined : handleBarCodeScanned}
-              style={StyleSheet.absoluteFillObject}
-            />
-            <View style={styles.qrOverlay}>
-              <Text style={styles.qrOverlayText}>Đặt mã QR vào khung để quét</Text>
-            </View>
-            <TouchableOpacity
-              style={styles.qrCloseButton}
-              onPress={() => setScanning(false)}
-            >
-              <Text style={styles.qrCloseButtonText}>Đóng</Text>
-            </TouchableOpacity>
-          </View>
-        </Modal>
-      )}
 
       <ScrollView style={styles.scrollContainer}>
         {/* Modal chỉnh sửa ví */}
