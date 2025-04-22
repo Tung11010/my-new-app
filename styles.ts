@@ -8,13 +8,26 @@ const styles = StyleSheet.create({
   },
   scrollContainer: {
     flex: 1,
-    paddingTop: 100, // Tăng từ 80 lên 100 để đẩy header xuống dưới thêm
+    paddingTop: 100,
   },
   header: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 20,
+    paddingHorizontal: 10,
+    paddingTop: 40,
+    paddingBottom: 10,
+    backgroundColor: '#rgb(45, 43, 43)',
+    zIndex: 100,
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
   },
   walletNameContainer: {
     flexDirection: 'row',
@@ -45,7 +58,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
   },
   headerIcon: {
+    width: 24, // Kích thước phù hợp cho hình ảnh QR code
+    height: 24,
     marginLeft: 15,
+    resizeMode: 'contain', // Đảm bảo hình ảnh không bị méo
   },
   balanceContainer: {
     alignItems: 'center',
@@ -53,12 +69,22 @@ const styles = StyleSheet.create({
   },
   balance: {
     color: '#FFFFFF',
-    fontSize: 36,
+    fontSize: 40,
     fontWeight: 'bold',
   },
   balanceChange: {
     fontSize: 16,
-    marginTop: 5,
+    marginTop: 4,
+    marginRight: 8,
+  },
+  percentChangeContainer: {
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+  },
+  percentChangeText: {
+    color: '#FFFFFF',
+    fontSize: 14,
   },
   buttonContainer: {
     flexDirection: 'row',
@@ -75,8 +101,8 @@ const styles = StyleSheet.create({
     marginHorizontal: 5,
   },
   buttonIcon: {
-    width: 24,
-    height: 24,
+    width: 32,
+    height: 32,
     marginBottom: 5,
     resizeMode: 'contain',
   },
@@ -236,6 +262,38 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+  },
+  // Styles cho quét mã QR
+  qrScannerContainer: {
+    flex: 1,
+    backgroundColor: '#000',
+  },
+  qrOverlay: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  qrOverlayText: {
+    color: '#FFFFFF',
+    fontSize: 18,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    padding: 10,
+    borderRadius: 5,
+  },
+  qrCloseButton: {
+    position: 'absolute',
+    bottom: 40,
+    left: 0,
+    right: 0,
+    alignItems: 'center',
+  },
+  qrCloseButtonText: {
+    color: '#FFFFFF',
+    fontSize: 18,
+    backgroundColor: '#FF3B30',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 10,
   },
 
   // Styles cho TokenDetailScreen
