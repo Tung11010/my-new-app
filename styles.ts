@@ -3,14 +3,31 @@ import { StyleSheet } from 'react-native';
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#131A2A',
-    padding: 20,
+    backgroundColor: '#rgb(45, 43, 43)',
+    paddingHorizontal: 10,
+  },
+  scrollContainer: {
+    flex: 1,
+    paddingTop: 100,
   },
   header: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 20,
+    paddingHorizontal: 10,
+    paddingTop: 40,
+    paddingBottom: 10,
+    backgroundColor: '#rgb(45, 43, 43)',
+    zIndex: 100,
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
   },
   walletNameContainer: {
     flexDirection: 'row',
@@ -41,7 +58,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
   },
   headerIcon: {
+    width: 24, // Kích thước phù hợp cho hình ảnh QR code
+    height: 24,
     marginLeft: 15,
+    resizeMode: 'contain', // Đảm bảo hình ảnh không bị méo
   },
   balanceContainer: {
     alignItems: 'center',
@@ -49,17 +69,28 @@ const styles = StyleSheet.create({
   },
   balance: {
     color: '#FFFFFF',
-    fontSize: 36,
+    fontSize: 40,
     fontWeight: 'bold',
   },
   balanceChange: {
     fontSize: 16,
-    marginTop: 5,
+    marginTop: 4,
+    marginRight: 8,
+  },
+  percentChangeContainer: {
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+  },
+  percentChangeText: {
+    color: '#FFFFFF',
+    fontSize: 14,
   },
   buttonContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginBottom: 20,
+    marginHorizontal: 5,
   },
   button: {
     alignItems: 'center',
@@ -69,10 +100,15 @@ const styles = StyleSheet.create({
     flex: 1,
     marginHorizontal: 5,
   },
+  buttonIcon: {
+    width: 32,
+    height: 32,
+    marginBottom: 5,
+    resizeMode: 'contain',
+  },
   buttonText: {
     color: '#FFFFFF',
     fontSize: 14,
-    marginTop: 5,
   },
   tokenCountContainer: {
     flexDirection: 'row',
@@ -95,10 +131,11 @@ const styles = StyleSheet.create({
   tokenContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#242E42',
+    backgroundColor: '#1E2A2B',
     padding: 10,
     borderRadius: 10,
     marginBottom: 10,
+    marginHorizontal: 5,
   },
   tokenLogoContainer: {
     position: 'relative',
@@ -116,7 +153,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: '#131A2A',
+    borderColor: '#rgb(45, 43, 43)',
     width: 16,
     height: 16,
     resizeMode: 'contain',
@@ -219,6 +256,256 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: 'rgba(0,0,0,0.3)',
+  },
+  tokenDetails: {
+    flex: 1,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  // Styles cho quét mã QR
+  qrScannerContainer: {
+    flex: 1,
+    backgroundColor: '#000',
+  },
+  qrOverlay: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  qrOverlayText: {
+    color: '#FFFFFF',
+    fontSize: 18,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    padding: 10,
+    borderRadius: 5,
+  },
+  qrCloseButton: {
+    position: 'absolute',
+    bottom: 40,
+    left: 0,
+    right: 0,
+    alignItems: 'center',
+  },
+  qrCloseButtonText: {
+    color: '#FFFFFF',
+    fontSize: 18,
+    backgroundColor: '#FF3B30',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 10,
+  },
+
+  // Styles cho TokenDetailScreen
+  detailHeader: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 10,
+    paddingVertical: 10,
+    backgroundColor: '#rgb(45, 43, 43)',
+    zIndex: 10,
+  },
+  backButton: {
+    position: 'absolute',
+    left: 10,
+  },
+  detailTitle: {
+    color: '#FFFFFF',
+    fontSize: 20,
+    fontWeight: 'bold',
+  },
+  priceContainer: {
+    alignItems: 'center',
+    paddingVertical: 20,
+    paddingHorizontal: 10,
+  },
+  price: {
+    color: '#FFFFFF',
+    fontSize: 40,
+    fontWeight: 'bold',
+  },
+  priceChange: {
+    fontSize: 16,
+    marginTop: 5,
+  },
+  chart: {
+    marginVertical: 8,
+    marginHorizontal: 10,
+  },
+  timeTabs: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    paddingVertical: 10,
+    paddingHorizontal: 10,
+  },
+  timeTab: {
+    paddingVertical: 8,
+    paddingHorizontal: 15,
+    borderRadius: 20,
+    backgroundColor: '#242E42',
+  },
+  activeTimeTab: {
+    backgroundColor: '#007AFF',
+  },
+  timeTabText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+  },
+  actionButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    paddingVertical: 15,
+    paddingHorizontal: 10,
+  },
+  actionButton: {
+    alignItems: 'center',
+  },
+  actionButtonText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    marginTop: 5,
+  },
+  balanceSection: {
+    paddingHorizontal: 10,
+    paddingVertical: 10,
+  },
+  sectionTitle: {
+    color: '#FFFFFF',
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 10,
+  },
+  balanceRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#242E42',
+    borderRadius: 10,
+    padding: 15,
+  },
+  balanceInfo: {
+    flex: 1,
+    marginLeft: 10,
+  },
+  balanceName: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  balanceAmount: {
+    color: '#A6B0C3',
+    fontSize: 14,
+  },
+  balanceValue: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  stakingSection: {
+    backgroundColor: '#242E42',
+    borderRadius: 12,
+    marginHorizontal: 10,
+    marginVertical: 8,
+    padding: 15,
+  },
+  stakingHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  stakingTitle: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginLeft: 8,
+  },
+  stakingDescription: {
+    color: '#A6B0C3',
+    fontSize: 14,
+  },
+  introductionSection: {
+    paddingHorizontal: 10,
+    paddingVertical: 10,
+  },
+  introductionText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    lineHeight: 20,
+  },
+  showMoreText: {
+    color: '#A855F7',
+    fontSize: 14,
+    marginTop: 5,
+  },
+  linksSection: {
+    flexDirection: 'row',
+    justifyContent: 'flex-start',
+    paddingHorizontal: 10,
+    paddingVertical: 10,
+    gap: 10,
+  },
+  linkButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#242E42',
+    paddingVertical: 8,
+    paddingHorizontal: 15,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#3A465A',
+  },
+  linkText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    marginLeft: 5,
+  },
+  infoSection: {
+    backgroundColor: '#242E42',
+    borderRadius: 12,
+    marginHorizontal: 10,
+    marginVertical: 8,
+    padding: 15,
+  },
+  infoRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginVertical: 5,
+  },
+  infoLabel: {
+    color: '#A6B0C3',
+    fontSize: 14,
+  },
+  infoValue: {
+    color: '#FFFFFF',
+    fontSize: 14,
+  },
+  performanceSection: {
+    backgroundColor: '#242E42',
+    borderRadius: 12,
+    marginHorizontal: 10,
+    marginVertical: 8,
+    padding: 15,
+  },
+  changePercent: {
+    fontSize: 14,
+  },
+  buyButton: {
+    backgroundColor: '#A855F7',
+    opacity: 0.9,
+    marginHorizontal: 10,
+    marginVertical: 15,
+    paddingVertical: 15,
+    borderRadius: 12,
+    alignItems: 'center',
+  },
+  buyButtonText: {
+    color: '#FFFFFF',
+    fontSize: 18,
+    fontWeight: 'bold',
   },
 });
 
